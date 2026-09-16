@@ -1,0 +1,1327 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard | WebAuth</title>
+    <!-- Google Font -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <!-- AdminLTE -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css"
+    />
+    <!-- DataTables -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css"
+    />
+    <!-- SheetJS (Excel export) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+      .passkey-badge {
+        font-size: 0.75rem;
+      }
+      .fp-id {
+        font-family: monospace;
+        font-size: 0.72rem;
+        color: #6c757d;
+        word-break: break-all;
+      }
+      .action-btn {
+        margin: 1px;
+      }
+      #login-overlay {
+        position: fixed;
+        inset: 0;
+        background: #1a2035;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .login-box {
+        width: 360px;
+      }
+      .stat-icon {
+        font-size: 2rem;
+        opacity: 0.7;
+      }
+      .device-pill {
+        font-size: 0.7rem;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body class="hold-transition sidebar-mini layout-fixed">
+    <!-- ══ LOGIN OVERLAY ════════════════════════════════════════════════════════ -->
+    <div id="login-overlay">
+      <div class="login-box">
+        <div class="card card-outline card-primary">
+          <div class="card-header text-center">
+            <div class="mb-2">
+              <i class="fas fa-fingerprint fa-3x text-primary"></i>
+            </div>
+            <h1 class="h4 mb-0 font-weight-bold">WebAuth</h1>
+            <p class="text-muted small">Admin Panel</p>
+          </div>
+          <div class="card-body">
+            <p class="login-box-msg">Login untuk mengakses dashboard</p>
+            <div id="login-error" class="alert alert-danger d-none"></div>
+            <div class="input-group mb-3">
+              <input
+                type="password"
+                id="admin-password"
+                class="form-control"
+                placeholder="Password Admin"
+                autofocus
+              />
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-lock"></span>
+                </div>
+              </div>
+            </div>
+            <button id="btn-login" class="btn btn-primary btn-block">
+              <i class="fas fa-sign-in-alt mr-1"></i> Masuk
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WRAPPER ══════════════════════════════════════════════════════════════ -->
+    <div class="wrapper" id="main-app" style="display: none">
+      <!-- Navbar -->
+      <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" data-widget="pushmenu" href="#"
+              ><i class="fas fa-bars"></i
+            ></a>
+          </li>
+          <li class="nav-item d-none d-sm-inline-block">
+            <a href="#" class="nav-link font-weight-bold text-primary"
+              >Admin Dashboard</a
+            >
+          </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="#" id="btn-logout">
+              <i class="fas fa-sign-out-alt mr-1"></i
+              ><span class="d-none d-md-inline">Logout</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar -->
+      <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/admin.html" class="brand-link">
+          <i
+            class="fas fa-fingerprint brand-image ml-3 mr-2 text-primary"
+            style="font-size: 1.8rem; line-height: 1.6"
+          ></i>
+          <span class="brand-text font-weight-bold">WebAuth</span>
+        </a>
+        <div class="sidebar">
+          <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="image">
+              <i class="fas fa-user-shield fa-2x text-primary ml-1 mt-1"></i>
+            </div>
+            <div class="info">
+              <a href="#" class="d-block text-light">Administrator</a>
+            </div>
+          </div>
+          <nav class="mt-2">
+            <ul
+              class="nav nav-pills nav-sidebar flex-column"
+              data-widget="treeview"
+              role="menu"
+            >
+              <li class="nav-item">
+                <a href="#" class="nav-link active" id="nav-dashboard">
+                  <i class="nav-icon fas fa-tachometer-alt"></i>
+                  <p>Dashboard</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" id="nav-employees">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>Karyawan</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link" id="nav-report">
+                  <i class="nav-icon fas fa-file-alt"></i>
+                  <p>Laporan Absensi</p>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Content Wrapper -->
+      <div class="content-wrapper">
+        <!-- ── Breadcrumb ── -->
+        <div class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1 class="m-0" id="page-title">Dashboard</h1>
+              </div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                  <li class="breadcrumb-item"><a href="#">Home</a></li>
+                  <li class="breadcrumb-item active" id="breadcrumb-current">
+                    Dashboard
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Content ── -->
+        <section class="content">
+          <div class="container-fluid">
+            <!-- ════ DASHBOARD PAGE ════ -->
+            <div id="page-dashboard">
+              <div class="row">
+                <div class="col-lg-3 col-6">
+                  <div class="small-box bg-info">
+                    <div class="inner">
+                      <h3 id="stat-total">0</h3>
+                      <p>Total Karyawan</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-users"></i></div>
+                    <a
+                      href="#"
+                      class="small-box-footer"
+                      id="stat-goto-employees"
+                      >Lihat semua <i class="fas fa-arrow-circle-right"></i
+                    ></a>
+                  </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                  <div class="small-box bg-success">
+                    <div class="inner">
+                      <h3 id="stat-with-passkey">0</h3>
+                      <p>Passkey Aktif</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-fingerprint"></i></div>
+                    <a
+                      href="#"
+                      class="small-box-footer"
+                      id="stat-goto-employees2"
+                      >Lihat detail <i class="fas fa-arrow-circle-right"></i
+                    ></a>
+                  </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                  <div class="small-box bg-warning">
+                    <div class="inner">
+                      <h3 id="stat-without-passkey">0</h3>
+                      <p>Belum Daftar</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-user-times"></i></div>
+                    <a href="#" class="small-box-footer"
+                      >Info <i class="fas fa-arrow-circle-right"></i
+                    ></a>
+                  </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                  <div class="small-box bg-danger">
+                    <div class="inner">
+                      <h3 id="stat-total-passkeys">0</h3>
+                      <p>Total Passkey</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-key"></i></div>
+                    <a href="#" class="small-box-footer"
+                      >Info <i class="fas fa-arrow-circle-right"></i
+                    ></a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info Card -->
+              <div class="row">
+                <div class="col-12">
+                  <div class="card card-outline card-primary">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i class="fas fa-info-circle mr-2"></i>Panduan
+                      </h3>
+                    </div>
+                    <div class="card-body">
+                      <ul class="mb-0">
+                        <li>
+                          Tambahkan karyawan terlebih dahulu, lalu bagikan
+                          username mereka.
+                        </li>
+                        <li>
+                          Karyawan login ke
+                          <a href="/user.html" target="_blank"
+                            ><b>/user.html</b></a
+                          >
+                          dan daftarkan fingerprint.
+                        </li>
+                        <li>
+                          Saat login dari perangkat berbeda, sistem akan
+                          menampilkan peringatan.
+                        </li>
+                        <li>
+                          Admin dapat <b>reset passkey</b> agar karyawan dapat
+                          mendaftar ulang dari perangkat baru.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════ REPORT PAGE ════ -->
+            <div id="page-report" style="display: none">
+              <div class="row mb-3">
+                <div class="col-12">
+                  <div class="card card-outline card-success">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i class="fas fa-filter mr-2"></i>Filter Laporan
+                      </h3>
+                    </div>
+                    <div class="card-body">
+                      <div class="row align-items-end">
+                        <div class="col-md-3 form-group mb-0">
+                          <label class="font-weight-bold">Dari Tanggal</label>
+                          <input
+                            type="date"
+                            id="report-from"
+                            class="form-control"
+                          />
+                        </div>
+                        <div class="col-md-3 form-group mb-0">
+                          <label class="font-weight-bold">Sampai Tanggal</label>
+                          <input
+                            type="date"
+                            id="report-to"
+                            class="form-control"
+                          />
+                        </div>
+                        <div class="col-md-3 form-group mb-0">
+                          <label class="d-block">&nbsp;</label>
+                          <button class="btn btn-primary" id="btn-load-report">
+                            <i class="fas fa-search mr-1"></i>Tampilkan
+                          </button>
+                          <button
+                            class="btn btn-outline-secondary ml-1"
+                            id="btn-reset-filter"
+                          >
+                            <i class="fas fa-undo mr-1"></i>Reset
+                          </button>
+                        </div>
+                        <div class="col-md-3 form-group mb-0 text-right">
+                          <label class="d-block">&nbsp;</label>
+                          <button
+                            class="btn btn-success"
+                            id="btn-download-excel"
+                            disabled
+                          >
+                            <i class="fas fa-file-excel mr-1"></i>Download Excel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <div class="card card-outline card-primary">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i class="fas fa-table mr-2"></i>Data Absensi
+                      </h3>
+                      <div class="card-tools">
+                        <span id="report-count" class="badge badge-primary"
+                          >0 data</span
+                        >
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div
+                        id="report-empty"
+                        class="text-center text-muted py-4"
+                        style="display: none"
+                      >
+                        <i class="fas fa-inbox fa-3x mb-2"></i><br />Tidak ada
+                        data absensi untuk rentang tanggal ini.
+                      </div>
+                      <div class="table-responsive" id="report-table-wrap">
+                        <table
+                          id="report-table"
+                          class="table table-bordered table-hover table-sm"
+                        >
+                          <thead class="bg-primary text-white">
+                            <tr>
+                              <th>Tanggal</th>
+                              <th>Nama Karyawan</th>
+                              <th>Username</th>
+                              <th>Check-In</th>
+                              <th>Check-Out</th>
+                              <th>Durasi Kerja</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody id="report-tbody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ════ EMPLOYEES PAGE ════ -->
+            <div id="page-employees" style="display: none">
+              <div class="row mb-3">
+                <div
+                  class="col-12 d-flex justify-content-between align-items-center"
+                >
+                  <h5 class="mb-0 text-muted">Manajemen Karyawan</h5>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    data-toggle="modal"
+                    data-target="#modalAddEmployee"
+                  >
+                    <i class="fas fa-user-plus mr-1"></i> Tambah Karyawan
+                  </button>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <div class="card card-outline card-primary">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i class="fas fa-users mr-2"></i>Daftar Karyawan
+                      </h3>
+                      <div class="card-tools">
+                        <button
+                          type="button"
+                          class="btn btn-tool"
+                          data-card-widget="collapse"
+                        >
+                          <i class="fas fa-minus"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div class="table-responsive">
+                        <table
+                          id="employee-table"
+                          class="table table-bordered table-hover table-sm"
+                        >
+                          <thead class="bg-primary">
+                            <tr>
+                              <th>Nama</th>
+                              <th>Username</th>
+                              <th>Status Passkey</th>
+                              <th>FingerprintJS ID</th>
+                              <th>Terdaftar</th>
+                              <th class="text-center">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody id="employee-tbody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer -->
+      <footer class="main-footer text-sm">
+        <strong>WebAuth Admin</strong> — Sistem Autentikasi Fingerprint
+        <div class="float-right d-none d-sm-inline-block">
+          <b>Version</b> 1.0.0
+        </div>
+      </footer>
+
+      <aside class="control-sidebar control-sidebar-dark"></aside>
+    </div>
+
+    <!-- ══ MODAL: Tambah Karyawan ══════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalAddEmployee" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-primary">
+            <h5 class="modal-title text-white">
+              <i class="fas fa-user-plus mr-2"></i>Tambah Karyawan
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="add-error" class="alert alert-danger d-none"></div>
+            <div class="form-group">
+              <label>Nama Lengkap</label>
+              <input
+                type="text"
+                id="add-name"
+                class="form-control"
+                placeholder="Contoh: Budi Santoso"
+              />
+            </div>
+            <div class="form-group">
+              <label>Username <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                id="add-username"
+                class="form-control"
+                placeholder="Contoh: budi.santoso"
+              />
+              <small class="text-muted"
+                >Akan digunakan karyawan untuk login</small
+              >
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-add-employee">
+              <i class="fas fa-save mr-1"></i>Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODAL: Edit Karyawan ════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalEditEmployee" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title">
+              <i class="fas fa-edit mr-2"></i>Edit Karyawan
+            </h5>
+            <button type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="edit-id" />
+            <div id="edit-error" class="alert alert-danger d-none"></div>
+            <div class="form-group">
+              <label>Nama Lengkap</label>
+              <input type="text" id="edit-name" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="edit-username" class="form-control" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button type="button" class="btn btn-warning" id="btn-save-edit">
+              <i class="fas fa-save mr-1"></i>Simpan Perubahan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODAL: Passkey Detail ═══════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalPasskeys" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-info">
+            <h5 class="modal-title text-white">
+              <i class="fas fa-fingerprint mr-2"></i>Detail Passkey —
+              <span id="pk-modal-name"></span>
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body" id="pk-modal-body"></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODAL: Konfirmasi Hapus ═════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalConfirm" tabindex="-1">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header bg-danger">
+            <h5 class="modal-title text-white">
+              <i class="fas fa-exclamation-triangle mr-2"></i>Konfirmasi
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="confirm-message">Yakin melanjutkan?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              data-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              id="btn-confirm-ok"
+            >
+              Ya, Lanjutkan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCRIPTS ══════════════════════════════════════════════════════════════ -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+      // ── STATE ──────────────────────────────────────────────────────────────────
+      let employees = [];
+      let confirmCallback = null;
+      let dtTable = null;
+
+      // ── ROUTER ─────────────────────────────────────────────────────────────────
+      function showPage(page) {
+        ["dashboard", "employees", "report"].forEach((p) => {
+          document.getElementById(`page-${p}`).style.display =
+            p === page ? "" : "none";
+        });
+        const titles = {
+          dashboard: "Dashboard",
+          employees: "Karyawan",
+          report: "Laporan Absensi",
+        };
+        document.getElementById("page-title").textContent = titles[page];
+        document.getElementById("breadcrumb-current").textContent =
+          titles[page];
+        document
+          .querySelectorAll('.nav-link[id^="nav-"]')
+          .forEach((el) => el.classList.remove("active"));
+        const nav = document.getElementById(`nav-${page}`);
+        if (nav) nav.classList.add("active");
+        if (page === "employees") loadEmployees();
+        if (page === "dashboard") loadStats();
+        if (page === "report") initReportPage();
+      }
+
+      document
+        .getElementById("nav-dashboard")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          showPage("dashboard");
+        });
+      document
+        .getElementById("nav-employees")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          showPage("employees");
+        });
+      document.getElementById("nav-report").addEventListener("click", (e) => {
+        e.preventDefault();
+        showPage("report");
+      });
+      document
+        .getElementById("stat-goto-employees")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          showPage("employees");
+        });
+      document
+        .getElementById("stat-goto-employees2")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          showPage("employees");
+        });
+
+      // ── UTILS ──────────────────────────────────────────────────────────────────
+      function showConfirm(message, callback) {
+        document.getElementById("confirm-message").textContent = message;
+        confirmCallback = callback;
+        $("#modalConfirm").modal("show");
+      }
+      document
+        .getElementById("btn-confirm-ok")
+        .addEventListener("click", () => {
+          $("#modalConfirm").modal("hide");
+          if (confirmCallback) confirmCallback();
+        });
+
+      function toast(msg, type = "success") {
+        const colors = {
+          success: "#28a745",
+          danger: "#dc3545",
+          warning: "#ffc107",
+          info: "#17a2b8",
+        };
+        const el = document.createElement("div");
+        el.style.cssText = `position:fixed;top:70px;right:20px;z-index:9999;min-width:260px;padding:12px 18px;
+      border-radius:6px;color:#fff;background:${
+        colors[type] || colors.info
+      };box-shadow:0 4px 12px rgba(0,0,0,.2);
+      font-size:0.9rem;animation:fadeIn .3s`;
+        el.innerHTML = `<i class="fas fa-${
+          type === "success"
+            ? "check-circle"
+            : type === "danger"
+              ? "times-circle"
+              : "info-circle"
+        } mr-2"></i>${msg}`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+      }
+
+      function fmtDate(iso) {
+        if (!iso) return "-";
+        return new Date(iso).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+
+      // ── ADMIN LOGIN ────────────────────────────────────────────────────────────
+      async function checkAdminSession() {
+        const r = await fetch("/api/admin/me");
+        const d = await r.json();
+        if (d.isAdmin) showMainApp();
+      }
+
+      async function adminLogin() {
+        const password = document.getElementById("admin-password").value;
+        const errEl = document.getElementById("login-error");
+        errEl.classList.add("d-none");
+        const r = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+        });
+        if (r.ok) {
+          showMainApp();
+        } else {
+          const d = await r.json();
+          errEl.textContent = d.error || "Login gagal";
+          errEl.classList.remove("d-none");
+        }
+      }
+
+      function showMainApp() {
+        document.getElementById("login-overlay").style.display = "none";
+        document.getElementById("main-app").style.display = "";
+        loadStats();
+      }
+
+      document
+        .getElementById("btn-login")
+        .addEventListener("click", adminLogin);
+      document
+        .getElementById("admin-password")
+        .addEventListener("keydown", (e) => e.key === "Enter" && adminLogin());
+
+      document
+        .getElementById("btn-logout")
+        .addEventListener("click", async (e) => {
+          e.preventDefault();
+          await fetch("/api/admin/logout", { method: "POST" });
+          location.reload();
+        });
+
+      // ── STATS ──────────────────────────────────────────────────────────────────
+      async function loadStats() {
+        const r = await fetch("/api/admin/stats");
+        if (!r.ok) return;
+        const d = await r.json();
+        document.getElementById("stat-total").textContent = d.totalEmployees;
+        document.getElementById("stat-with-passkey").textContent =
+          d.withPasskey;
+        document.getElementById("stat-without-passkey").textContent =
+          d.withoutPasskey;
+        document.getElementById("stat-total-passkeys").textContent =
+          d.totalPasskeys;
+      }
+
+      // ── EMPLOYEES TABLE ────────────────────────────────────────────────────────
+      async function loadEmployees() {
+        const r = await fetch("/api/admin/employees");
+        if (!r.ok) return;
+        employees = await r.json();
+        renderTable();
+      }
+
+      function renderTable() {
+        if (dtTable) {
+          dtTable.destroy();
+          dtTable = null;
+        }
+
+        const tbody = document.getElementById("employee-tbody");
+        tbody.innerHTML = "";
+
+        employees.forEach((emp) => {
+          const hasPk = emp.passkeyCount > 0;
+          const statusBadge = hasPk
+            ? `<span class="badge badge-success"><i class="fas fa-fingerprint mr-1"></i>Aktif (${emp.passkeyCount})</span>`
+            : `<span class="badge badge-secondary"><i class="fas fa-times mr-1"></i>Belum</span>`;
+
+          const fpId = emp.fingerprint_id
+            ? `<span class="fp-id" title="${
+                emp.fingerprint_id
+              }">${emp.fingerprint_id.substring(0, 16)}…</span>`
+            : '<span class="text-muted small">—</span>';
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+        <td><strong>${emp.name || emp.username}</strong></td>
+        <td><code>${emp.username}</code></td>
+        <td>${statusBadge}</td>
+        <td>${fpId}</td>
+        <td>${fmtDate(emp.created_at)}</td>
+        <td class="text-center" style="min-width:200px">
+          ${
+            hasPk
+              ? `<button class="btn btn-info btn-xs action-btn" onclick="showPasskeys('${emp.id}')">
+            <i class="fas fa-fingerprint"></i> Passkey</button>`
+              : ""
+          }
+          <button class="btn btn-warning btn-xs action-btn" onclick="editEmployee('${
+            emp.id
+          }')">
+            <i class="fas fa-edit"></i> Edit</button>
+          ${
+            hasPk
+              ? `<button class="btn btn-secondary btn-xs action-btn" onclick="resetPasskey('${
+                  emp.id
+                }', '${emp.name || emp.username}')">
+            <i class="fas fa-sync"></i> Reset</button>`
+              : ""
+          }
+          <button class="btn btn-danger btn-xs action-btn" onclick="deleteEmployee('${
+            emp.id
+          }', '${emp.name || emp.username}')">
+            <i class="fas fa-trash"></i></button>
+        </td>
+      `;
+          tbody.appendChild(tr);
+        });
+
+        dtTable = $("#employee-table").DataTable({
+          language: {
+            emptyTable: "Tidak ada data yang tersedia",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+            infoEmpty: "Menampilkan 0 sampai 0 dari 0 entri",
+            infoFiltered: "(disaring dari _MAX_ total entri)",
+            lengthMenu: "Tampilkan _MENU_ entri",
+            loadingRecords: "Memuat...",
+            processing: "Memproses...",
+            search: "Cari:",
+            zeroRecords: "Tidak ditemukan data yang sesuai",
+            paginate: {
+              first: "Pertama",
+              last: "Terakhir",
+              next: "Selanjutnya",
+              previous: "Sebelumnya",
+            },
+          },
+          order: [[4, "desc"]],
+          pageLength: 10,
+        });
+      }
+
+      // ── ADD EMPLOYEE ───────────────────────────────────────────────────────────
+      document
+        .getElementById("btn-add-employee")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("add-name").value.trim();
+          const username = document.getElementById("add-username").value.trim();
+          const errEl = document.getElementById("add-error");
+          errEl.classList.add("d-none");
+
+          if (!username) {
+            errEl.textContent = "Username wajib diisi";
+            errEl.classList.remove("d-none");
+            return;
+          }
+
+          const r = await fetch("/api/admin/employees", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, username }),
+          });
+          if (r.ok) {
+            $("#modalAddEmployee").modal("hide");
+            document.getElementById("add-name").value = "";
+            document.getElementById("add-username").value = "";
+            toast("Karyawan berhasil ditambahkan!");
+            loadEmployees();
+            loadStats();
+          } else {
+            const d = await r.json();
+            errEl.textContent = d.error || "Gagal menambahkan karyawan";
+            errEl.classList.remove("d-none");
+          }
+        });
+
+      // ── EDIT EMPLOYEE ──────────────────────────────────────────────────────────
+      function editEmployee(id) {
+        const emp = employees.find((e) => e.id === id);
+        if (!emp) return;
+        document.getElementById("edit-id").value = emp.id;
+        document.getElementById("edit-name").value = emp.name || "";
+        document.getElementById("edit-username").value = emp.username || "";
+        document.getElementById("edit-error").classList.add("d-none");
+        $("#modalEditEmployee").modal("show");
+      }
+
+      document
+        .getElementById("btn-save-edit")
+        .addEventListener("click", async () => {
+          const id = document.getElementById("edit-id").value;
+          const name = document.getElementById("edit-name").value.trim();
+          const username = document
+            .getElementById("edit-username")
+            .value.trim();
+          const errEl = document.getElementById("edit-error");
+          errEl.classList.add("d-none");
+
+          const r = await fetch(`/api/admin/employees/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, username }),
+          });
+          if (r.ok) {
+            $("#modalEditEmployee").modal("hide");
+            toast("Data karyawan diperbarui!");
+            loadEmployees();
+          } else {
+            const d = await r.json();
+            errEl.textContent = d.error || "Gagal memperbarui";
+            errEl.classList.remove("d-none");
+          }
+        });
+
+      // ── PASSKEY DETAIL ─────────────────────────────────────────────────────────
+      function showPasskeys(empId) {
+        const emp = employees.find((e) => e.id === empId);
+        if (!emp) return;
+        document.getElementById("pk-modal-name").textContent =
+          emp.name || emp.username;
+
+        if (!emp.passkeys || emp.passkeys.length === 0) {
+          document.getElementById("pk-modal-body").innerHTML =
+            '<p class="text-muted">Tidak ada passkey.</p>';
+        } else {
+          document.getElementById("pk-modal-body").innerHTML = emp.passkeys
+            .map(
+              (pk) => `
+        <div class="card card-outline card-info mb-2">
+          <div class="card-body p-3">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <p class="mb-1"><strong><i class="fas fa-fingerprint text-info mr-1"></i>Credential ID</strong></p>
+                <p class="fp-id mb-2">${pk.credential_id}</p>
+                <p class="mb-1 small text-muted">
+                  <i class="fas fa-laptop mr-1"></i>Device: <b>${
+                    pk.device_type || "—"
+                  }</b>
+                  &nbsp;|&nbsp;
+                  <i class="fas fa-calendar mr-1"></i>Daftar: <b>${fmtDate(
+                    pk.created_at,
+                  )}</b>
+                  &nbsp;|&nbsp;
+                  <i class="fas fa-clock mr-1"></i>Terakhir: <b>${fmtDate(
+                    pk.last_used,
+                  )}</b>
+                </p>
+                ${
+                  pk.fingerprint_id
+                    ? `
+                  <p class="mb-0 small"><i class="fas fa-mobile-alt mr-1 text-success"></i>
+                  FingerprintJS ID: <code class="fp-id">${pk.fingerprint_id}</code></p>`
+                    : ""
+                }
+              </div>
+              <div class="col-md-4 text-right">
+                <button class="btn btn-danger btn-sm" onclick="deletePasskey('${
+                  pk.id
+                }')">
+                  <i class="fas fa-trash mr-1"></i>Hapus Passkey
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+            )
+            .join("");
+        }
+        $("#modalPasskeys").modal("show");
+      }
+
+      // ── DELETE PASSKEY ─────────────────────────────────────────────────────────
+      async function deletePasskey(passkeyId) {
+        showConfirm(
+          "Hapus passkey ini? Karyawan tidak bisa login sampai daftar ulang.",
+          async () => {
+            const r = await fetch(`/api/admin/passkeys/${passkeyId}`, {
+              method: "DELETE",
+            });
+            if (r.ok) {
+              $("#modalPasskeys").modal("hide");
+              toast("Passkey berhasil dihapus", "warning");
+              loadEmployees();
+              loadStats();
+            } else {
+              const d = await r.json();
+              toast(d.error || "Gagal menghapus passkey", "danger");
+            }
+          },
+        );
+      }
+
+      // ── RESET PASSKEY ──────────────────────────────────────────────────────────
+      async function resetPasskey(empId, empName) {
+        showConfirm(
+          `Reset semua passkey milik "${empName}"? Karyawan dapat mendaftar ulang dari perangkat baru.`,
+          async () => {
+            const r = await fetch(
+              `/api/admin/employees/${empId}/reset-passkey`,
+              { method: "POST" },
+            );
+            if (r.ok) {
+              toast(
+                "Passkey berhasil di-reset. Karyawan dapat mendaftar ulang.",
+                "info",
+              );
+              loadEmployees();
+              loadStats();
+            } else {
+              const d = await r.json();
+              toast(d.error || "Gagal reset passkey", "danger");
+            }
+          },
+        );
+      }
+
+      // ── DELETE EMPLOYEE ────────────────────────────────────────────────────────
+      async function deleteEmployee(empId, empName) {
+        showConfirm(
+          `Hapus karyawan "${empName}" beserta semua passkeynya? Tindakan ini tidak dapat dibatalkan.`,
+          async () => {
+            const r = await fetch(`/api/admin/employees/${empId}`, {
+              method: "DELETE",
+            });
+            if (r.ok) {
+              toast(`Karyawan "${empName}" berhasil dihapus`, "danger");
+              loadEmployees();
+              loadStats();
+            } else {
+              const d = await r.json();
+              toast(d.error || "Gagal menghapus karyawan", "danger");
+            }
+          },
+        );
+      }
+
+      // ── LAPORAN ABSENSI ────────────────────────────────────────────────────────
+      let reportData = [];
+      let dtReport = null;
+
+      function initReportPage() {
+        // Set default: bulan ini
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, "0");
+        const d = String(today.getDate()).padStart(2, "0");
+        const firstDay = `${y}-${m}-01`;
+        const todayStr = `${y}-${m}-${d}`;
+        if (!document.getElementById("report-from").value)
+          document.getElementById("report-from").value = firstDay;
+        if (!document.getElementById("report-to").value)
+          document.getElementById("report-to").value = todayStr;
+        loadReport();
+      }
+
+      async function loadReport() {
+        const from = document.getElementById("report-from").value;
+        const to = document.getElementById("report-to").value;
+
+        const params = new URLSearchParams();
+        if (from) params.append("from", from);
+        if (to) params.append("to", to);
+
+        const r = await fetch(`/api/admin/report?${params}`);
+        if (!r.ok) {
+          toast("Gagal memuat laporan", "danger");
+          return;
+        }
+        reportData = await r.json();
+        renderReport();
+      }
+
+      function calcDuration(cin, cout) {
+        if (!cin || !cout) return "—";
+        const diff = new Date(cout) - new Date(cin);
+        if (diff <= 0) return "—";
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        return `${h}j ${m}m`;
+      }
+
+      function fmtTime(iso) {
+        if (!iso) return "—";
+        return new Date(iso).toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function fmtDateLong(dateStr) {
+        if (!dateStr) return "-";
+        const [y, m, d] = dateStr.split("-");
+        const dt = new Date(y, m - 1, d);
+        return dt.toLocaleDateString("id-ID", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+
+      function renderReport() {
+        if (dtReport) {
+          dtReport.destroy();
+          dtReport = null;
+        }
+        const tbody = document.getElementById("report-tbody");
+        tbody.innerHTML = "";
+        document.getElementById("report-table-wrap").style.display = "";
+        document.getElementById("report-empty").style.display = "none";
+        document.getElementById("btn-download-excel").disabled =
+          reportData.length === 0;
+        document.getElementById("report-count").textContent =
+          `${reportData.length} data`;
+
+        if (reportData.length === 0) {
+          document.getElementById("report-table-wrap").style.display = "none";
+          document.getElementById("report-empty").style.display = "";
+          return;
+        }
+
+        reportData.forEach((row) => {
+          const hasCin = !!row.checkin;
+          const hasCout = !!row.checkout;
+          let statusBadge;
+          if (hasCin && hasCout)
+            statusBadge = '<span class="badge badge-success">Lengkap</span>';
+          else if (hasCin)
+            statusBadge =
+              '<span class="badge badge-warning">Belum Checkout</span>';
+          else
+            statusBadge = '<span class="badge badge-danger">Tidak Hadir</span>';
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+        <td>${fmtDateLong(row.date)}</td>
+        <td><strong>${row.name || row.username}</strong></td>
+        <td><code>${row.username}</code></td>
+        <td>${
+          hasCin
+            ? `<span class="text-success font-weight-bold">${fmtTime(
+                row.checkin,
+              )}</span>`
+            : '<span class="text-muted">—</span>'
+        }</td>
+        <td>${
+          hasCout
+            ? `<span class="text-danger font-weight-bold">${fmtTime(
+                row.checkout,
+              )}</span>`
+            : '<span class="text-muted">—</span>'
+        }</td>
+        <td>${calcDuration(row.checkin, row.checkout)}</td>
+        <td>${statusBadge}</td>
+      `;
+          tbody.appendChild(tr);
+        });
+
+        dtReport = $("#report-table").DataTable({
+          language: {
+            emptyTable: "Tidak ada data",
+            info: "Menampilkan _START_–_END_ dari _TOTAL_",
+            infoEmpty: "Tidak ada data",
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_",
+            paginate: { next: "Berikutnya", previous: "Sebelumnya" },
+          },
+          order: [
+            [0, "asc"],
+            [1, "asc"],
+          ],
+          pageLength: 25,
+        });
+      }
+
+      document
+        .getElementById("btn-load-report")
+        .addEventListener("click", loadReport);
+
+      document
+        .getElementById("btn-reset-filter")
+        .addEventListener("click", () => {
+          document.getElementById("report-from").value = "";
+          document.getElementById("report-to").value = "";
+          reportData = [];
+          renderReport();
+        });
+
+      document
+        .getElementById("btn-download-excel")
+        .addEventListener("click", () => {
+          if (reportData.length === 0) return;
+
+          const from = document.getElementById("report-from").value || "all";
+          const to = document.getElementById("report-to").value || "all";
+
+          // Buat data untuk Excel
+          const rows = reportData.map((row, i) => ({
+            No: i + 1,
+            Tanggal: row.date,
+            Hari: fmtDateLong(row.date),
+            "Nama Karyawan": row.name || row.username,
+            Username: row.username,
+            "Jam Check-In": row.checkin ? fmtTime(row.checkin) : "",
+            "Jam Check-Out": row.checkout ? fmtTime(row.checkout) : "",
+            "Durasi Kerja": calcDuration(row.checkin, row.checkout),
+            Status:
+              row.checkin && row.checkout
+                ? "Lengkap"
+                : row.checkin
+                  ? "Belum Checkout"
+                  : "Tidak Hadir",
+          }));
+
+          const ws = XLSX.utils.json_to_sheet(rows);
+
+          // Set lebar kolom
+          ws["!cols"] = [
+            { wch: 5 },
+            { wch: 12 },
+            { wch: 22 },
+            { wch: 22 },
+            { wch: 15 },
+            { wch: 13 },
+            { wch: 13 },
+            { wch: 13 },
+            { wch: 16 },
+          ];
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Laporan Absensi");
+
+          const fileName = `Laporan_Absensi_${from}_sd_${to}.xlsx`;
+          XLSX.writeFile(wb, fileName);
+          toast(`File "${fileName}" berhasil diunduh`, "success");
+        });
+
+      // ── INIT ───────────────────────────────────────────────────────────────────
+      checkAdminSession();
+
+      // ── WEBSOCKET — Real-time attendance updates ───────────────────────────────
+      let ws;
+      function connectWS() {
+        ws = new WebSocket(`wss://${location.host}`);
+
+        ws.addEventListener("message", (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === "attendance_update") {
+              const action =
+                msg.action === "checkin" ? "Check-In" : "Check-Out";
+              const name = msg.user?.name || msg.user?.username || "Karyawan";
+              const time = msg.time
+                ? new Date(msg.time).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "";
+              toast(`${action}: <strong>${name}</strong> — ${time}`, "info");
+              // Refresh stats & tabel jika sedang aktif
+              loadStats();
+              const empPage = document.getElementById("page-employees");
+              if (empPage && empPage.style.display !== "none") loadEmployees();
+            }
+          } catch (e) {
+            /* ignore parse error */
+          }
+        });
+
+        ws.addEventListener("close", () => {
+          // Reconnect otomatis setelah 3 detik
+          setTimeout(connectWS, 3000);
+        });
+
+        ws.addEventListener("error", () => ws.close());
+      }
+      connectWS();
+    </script>
+  </body>
+</html>

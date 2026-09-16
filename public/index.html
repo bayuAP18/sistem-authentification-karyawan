@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebAuth - Pilih Portal</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+  <style>
+    body { background: #1a2035; }
+    .portal-btn {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px; border-radius: .375rem;
+      text-decoration: none; color: #fff; margin-bottom: 10px;
+      transition: opacity .2s, transform .15s;
+    }
+    .portal-btn:last-child { margin-bottom: 0; }
+    .portal-btn:hover { opacity: .88; transform: translateX(3px); color: #fff; text-decoration: none; }
+    .portal-btn .btn-icon {
+      width: 46px; height: 46px; border-radius: .375rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0; background: rgba(255,255,255,.2);
+    }
+    .portal-btn .btn-label { font-weight: 600; font-size: .95rem; line-height: 1.3; }
+    .portal-btn .btn-desc  { font-size: .75rem; opacity: .75; }
+  </style>
+</head>
+<body class="hold-transition">
+
+<div class="d-flex align-items-center justify-content-center" style="min-height:100vh; padding:16px;">
+  <div style="width:360px; margin:0">
+
+    <div class="login-logo">
+      <i class="fas fa-fingerprint fa-2x text-primary"></i><br>
+      <b class="text-white">WebAuth</b>
+    </div>
+
+    <div class="card card-outline card-primary">
+      <div class="card-header text-center pb-1">
+        <h5 class="mb-0"><i class="fas fa-th-large mr-1 text-primary"></i>Pilih Portal</h5>
+        <small class="text-muted">Sistem Autentikasi Fingerprint</small>
+      </div>
+      <div class="card-body">
+
+        <a class="portal-btn bg-success" href="/user.html">
+          <div class="btn-icon"><i class="fas fa-mobile-alt text-white"></i></div>
+          <div>
+            <div class="btn-label">Portal Karyawan</div>
+            <div class="btn-desc">Absensi check-in &amp; check-out fingerprint</div>
+          </div>
+          <i class="fas fa-chevron-right ml-auto"></i>
+        </a>
+
+        <a class="portal-btn bg-warning" href="/admin.html">
+          <div class="btn-icon"><i class="fas fa-tachometer-alt text-white"></i></div>
+          <div>
+            <div class="btn-label">Admin Dashboard</div>
+            <div class="btn-desc">Manajemen karyawan &amp; data absensi</div>
+          </div>
+          <i class="fas fa-chevron-right ml-auto"></i>
+        </a>
+
+      </div>
+      <div class="card-footer text-center" style="font-size:.75rem">
+        <i class="fas fa-shield-alt mr-1 text-muted"></i>
+        <span class="text-muted">WebAuthn &bull; FIDO2 &bull; FingerprintJS</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "users": {
+    "1a03c7e5-1dee-4bea-adcc-43176312ce23": {
+      "id": "1a03c7e5-1dee-4bea-adcc-43176312ce23",
+      "username": "jjg",
+      "created_at": "2026-09-15T13:45:32.180Z"
+    },
+    "82766cfd-e40d-471e-a2d4-827ba6920d81": {
+      "id": "82766cfd-e40d-471e-a2d4-827ba6920d81",
+      "username": "admin",
+      "name": "Administrator",
+      "role": "admin",
+      "fingerprint_id": null,
+      "passkey_reset": false,
+      "created_at": "2026-09-15T14:56:22.058Z"
+    },
+    "3a0bd6ae-47c4-4717-8fad-5827f555670e": {
+      "id": "3a0bd6ae-47c4-4717-8fad-5827f555670e",
+      "username": "5210223",
+      "name": "5210223",
+      "role": "employee",
+      "fingerprint_id": null,
+      "passkey_reset": false,
+      "created_at": "2026-09-15T14:57:29.474Z"
+    }
+  },
+  "passkeys": {}
+}
