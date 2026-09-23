@@ -270,7 +270,7 @@
                       <ul class="mb-0">
                         <li>
                           Tambahkan karyawan terlebih dahulu, lalu bagikan
-                          username mereka.
+                          ID Karyawan mereka.
                         </li>
                         <li>
                           Karyawan login ke
@@ -381,7 +381,7 @@
                             <tr>
                               <th>Tanggal</th>
                               <th>Nama Karyawan</th>
-                              <th>Username</th>
+                              <th>ID Karyawan</th>
                               <th>Check-In</th>
                               <th>Check-Out</th>
                               <th>Durasi Kerja</th>
@@ -439,7 +439,7 @@
                           <thead class="bg-primary">
                             <tr>
                               <th>Nama</th>
-                              <th>Username</th>
+                              <th>ID Karyawan</th>
                               <th>Status Passkey</th>
                               <th>FingerprintJS ID</th>
                               <th>Terdaftar</th>
@@ -493,12 +493,12 @@
               />
             </div>
             <div class="form-group">
-              <label>Username <span class="text-danger">*</span></label>
+              <label>ID Karyawan <span class="text-danger">*</span></label>
               <input
                 type="text"
-                id="add-username"
+                id="add-employee-id"
                 class="form-control"
-                placeholder="Contoh: budi.santoso"
+                placeholder="Contoh: EMP001"
               />
               <small class="text-muted"
                 >Akan digunakan karyawan untuk login</small
@@ -541,8 +541,8 @@
               <input type="text" id="edit-name" class="form-control" />
             </div>
             <div class="form-group">
-              <label>Username</label>
-              <input type="text" id="edit-username" class="form-control" />
+              <label>ID Karyawan</label>
+              <input type="text" id="edit-employee-id" class="form-control" />
             </div>
           </div>
           <div class="modal-footer">
@@ -830,8 +830,8 @@
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
-        <td><strong>${emp.name || emp.username}</strong></td>
-        <td><code>${emp.username}</code></td>
+        <td><strong>${emp.name || emp.employee_id}</strong></td>
+        <td><code>${emp.employee_id}</code></td>
         <td>${statusBadge}</td>
         <td>${fpId}</td>
         <td>${fmtDate(emp.created_at)}</td>
@@ -850,13 +850,13 @@
             hasPk
               ? `<button class="btn btn-secondary btn-xs action-btn" onclick="resetPasskey('${
                   emp.id
-                }', '${emp.name || emp.username}')">
+                }', '${emp.name || emp.employee_id}')">
             <i class="fas fa-sync"></i> Reset</button>`
               : ""
           }
           <button class="btn btn-danger btn-xs action-btn" onclick="deleteEmployee('${
             emp.id
-          }', '${emp.name || emp.username}')">
+          }', '${emp.name || emp.employee_id}')">
             <i class="fas fa-trash"></i></button>
         </td>
       `;
@@ -891,12 +891,12 @@
         .getElementById("btn-add-employee")
         .addEventListener("click", async () => {
           const name = document.getElementById("add-name").value.trim();
-          const username = document.getElementById("add-username").value.trim();
+          const employee_id = document.getElementById("add-employee-id").value.trim();
           const errEl = document.getElementById("add-error");
           errEl.classList.add("d-none");
 
-          if (!username) {
-            errEl.textContent = "Username wajib diisi";
+          if (!employee_id) {
+            errEl.textContent = "ID Karyawan wajib diisi";
             errEl.classList.remove("d-none");
             return;
           }
@@ -904,12 +904,12 @@
           const r = await fetch("/api/admin/employees", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, username }),
+            body: JSON.stringify({ name, employee_id }),
           });
           if (r.ok) {
             $("#modalAddEmployee").modal("hide");
             document.getElementById("add-name").value = "";
-            document.getElementById("add-username").value = "";
+            document.getElementById("add-employee-id").value = "";
             toast("Karyawan berhasil ditambahkan!");
             loadEmployees();
             loadStats();
@@ -926,7 +926,7 @@
         if (!emp) return;
         document.getElementById("edit-id").value = emp.id;
         document.getElementById("edit-name").value = emp.name || "";
-        document.getElementById("edit-username").value = emp.username || "";
+        document.getElementById("edit-employee-id").value = emp.employee_id || "";
         document.getElementById("edit-error").classList.add("d-none");
         $("#modalEditEmployee").modal("show");
       }
@@ -936,8 +936,8 @@
         .addEventListener("click", async () => {
           const id = document.getElementById("edit-id").value;
           const name = document.getElementById("edit-name").value.trim();
-          const username = document
-            .getElementById("edit-username")
+          const employee_id = document
+            .getElementById("edit-employee-id")
             .value.trim();
           const errEl = document.getElementById("edit-error");
           errEl.classList.add("d-none");
@@ -945,7 +945,7 @@
           const r = await fetch(`/api/admin/employees/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, username }),
+            body: JSON.stringify({ name, employee_id }),
           });
           if (r.ok) {
             $("#modalEditEmployee").modal("hide");
@@ -963,7 +963,7 @@
         const emp = employees.find((e) => e.id === empId);
         if (!emp) return;
         document.getElementById("pk-modal-name").textContent =
-          emp.name || emp.username;
+          emp.name || emp.employee_id;
 
         if (!emp.passkeys || emp.passkeys.length === 0) {
           document.getElementById("pk-modal-body").innerHTML =
@@ -1181,8 +1181,8 @@
           const tr = document.createElement("tr");
           tr.innerHTML = `
         <td>${fmtDateLong(row.date)}</td>
-        <td><strong>${row.name || row.username}</strong></td>
-        <td><code>${row.username}</code></td>
+        <td><strong>${row.name || row.employee_id}</strong></td>
+        <td><code>${row.employee_id}</code></td>
         <td>${
           hasCin
             ? `<span class="text-success font-weight-bold">${fmtTime(
@@ -1246,8 +1246,8 @@
             No: i + 1,
             Tanggal: row.date,
             Hari: fmtDateLong(row.date),
-            "Nama Karyawan": row.name || row.username,
-            Username: row.username,
+            "Nama Karyawan": row.name || row.employee_id,
+            "ID Karyawan": row.employee_id,
             "Jam Check-In": row.checkin ? fmtTime(row.checkin) : "",
             "Jam Check-Out": row.checkout ? fmtTime(row.checkout) : "",
             "Durasi Kerja": calcDuration(row.checkin, row.checkout),
@@ -1296,7 +1296,7 @@
             if (msg.type === "attendance_update") {
               const action =
                 msg.action === "checkin" ? "Check-In" : "Check-Out";
-              const name = msg.user?.name || msg.user?.username || "Karyawan";
+              const name = msg.user?.name || msg.user?.employee_id || "Karyawan";
               const time = msg.time
                 ? new Date(msg.time).toLocaleTimeString("id-ID", {
                     hour: "2-digit",

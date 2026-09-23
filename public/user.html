@@ -311,7 +311,7 @@ async function doIdentify() {
   try {
     const res = await fetch('/auth/identify', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username: nomor }),
+      body: JSON.stringify({ employee_id: nomor }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -331,8 +331,8 @@ async function doIdentify() {
 
 // SETUP
 function showSetupScreen() {
-  document.getElementById('setup-name').textContent = currentUser.name || currentUser.username;
-  document.getElementById('setup-num').textContent = `No. Karyawan: ${currentUser.username}`;
+  document.getElementById('setup-name').textContent = currentUser.name || currentUser.employee_id;
+  document.getElementById('setup-num').textContent = `ID Karyawan: ${currentUser.employee_id}`;
   hideAlert();
   updateHeader('Setup Passkey', 'Daftarkan fingerprint Anda');
   showScreen('screen-setup');
@@ -345,7 +345,7 @@ async function doSetupPasskey() {
   try {
     const beginRes = await fetch('/auth/register/begin', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username: currentUser.username }),
+      body: JSON.stringify({ employee_id: currentUser.employee_id }),
     });
     if (!beginRes.ok) {
       const d = await beginRes.json();
@@ -385,7 +385,7 @@ async function doLoginThenShowAttendance() {
   try {
     const beginRes = await fetch('/auth/login/begin', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username: currentUser.username }),
+      body: JSON.stringify({ employee_id: currentUser.employee_id }),
     });
     if (!beginRes.ok) {
       const d = await beginRes.json();
@@ -419,8 +419,8 @@ async function showAttendanceScreen() {
   const me = await meRes.json();
   if (!me.loggedIn) { goBack(); return; }
   currentUser = me.user;
-  document.getElementById('att-name').textContent = currentUser.name || currentUser.username;
-  document.getElementById('att-num').textContent = `No. Karyawan: ${currentUser.username}`;
+  document.getElementById('att-name').textContent = currentUser.name || currentUser.employee_id;
+  document.getElementById('att-num').textContent = `ID Karyawan: ${currentUser.employee_id}`;
   hideAlert();
   updateHeader('Absensi', 'Check-in / Check-out dengan fingerprint');
   showScreen('screen-attendance');
@@ -507,7 +507,7 @@ async function verifyBiometric() {
   try {
     const beginRes = await fetch('/auth/login/begin', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username: currentUser.username }),
+      body: JSON.stringify({ employee_id: currentUser.employee_id }),
     });
     if (!beginRes.ok) { const d = await beginRes.json(); showAlert(d.error || 'Gagal memulai verifikasi'); return false; }
     const options = await beginRes.json();

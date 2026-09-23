@@ -39,7 +39,7 @@ const User = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    username: {
+    employee_id: {
       type: DataTypes.STRING(100),
       allowNull: false,
       unique: true,
@@ -82,7 +82,7 @@ const Passkey = sequelize.define(
       allowNull: false,
     },
     credential_id: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(500),
       allowNull: false,
       unique: true,
     },
@@ -235,12 +235,12 @@ wss.on("connection", (ws, req) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 app.post("/auth/register/begin", async (req, res) => {
-  const { username } = req.body;
-  if (!username) return res.status(400).json({ error: "Username wajib diisi" });
+  const { employee_id } = req.body;
+  if (!employee_id) return res.status(400).json({ error: "ID Karyawan wajib diisi" });
 
-  let user = await User.findOne({ where: { username } });
+  let user = await User.findOne({ where: { employee_id } });
   if (!user) {
-    user = await User.create({ username, name: username, role: "employee" });
+    user = await User.create({ employee_id, name: employee_id, role: "employee" });
   }
 
   if (user.passkey_reset) {
@@ -259,8 +259,8 @@ app.post("/auth/register/begin", async (req, res) => {
     rpName: RP_NAME,
     rpID: getRpId(req),
     userID: Buffer.from(user.id),
-    userName: user.username,
-    userDisplayName: user.name || user.username,
+    userName: user.employee_id,
+    userDisplayName: user.name || user.employee_id,
     authenticatorSelection: {
       authenticatorAttachment: "platform",
       userVerification: "required",
@@ -342,7 +342,7 @@ app.post("/auth/register/complete", async (req, res) => {
   const user = await User.findByPk(userId);
   res.json({
     ok: true,
-    message: `Fingerprint berhasil didaftarkan untuk ${user.username}!`,
+    message: `Fingerprint berhasil didaftarkan untuk ${user.employee_id}!`,
   });
 });
 
@@ -351,11 +351,11 @@ app.post("/auth/register/complete", async (req, res) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 app.post("/auth/login/begin", async (req, res) => {
-  const { username } = req.body;
-  if (!username) return res.status(400).json({ error: "Username wajib diisi" });
+  const { employee_id } = req.body;
+  if (!employee_id) return res.status(400).json({ error: "ID Karyawan wajib diisi" });
 
-  const user = await User.findOne({ where: { username } });
-  if (!user) return res.status(404).json({ error: "User tidak ditemukan" });
+  const user = await User.findOne({ where: { employee_id } });
+  if (!user) return res.status(404).json({ error: "ID Karyawan tidak ditemukan" });
 
   const passkeys = await Passkey.findAll({ where: { user_id: user.id } });
   if (passkeys.length === 0) {
@@ -450,10 +450,10 @@ app.post("/auth/login/complete", async (req, res) => {
     deviceWarning,
     message: deviceWarning
       ? `Perangkat berbeda terdeteksi! Silakan hubungi administrator untuk reset passkey jika ini bukan Anda.`
-      : `Selamat datang, ${user.username}! Login berhasil via fingerprint`,
+      : `Selamat datang, ${user.employee_id}! Login berhasil via fingerprint`,
     user: {
       id: user.id,
-      username: user.username,
+      employee_id: user.employee_id,
       name: user.name,
       role: user.role,
     },
@@ -471,7 +471,7 @@ app.get("/auth/me", async (req, res) => {
     loggedIn: true,
     user: {
       id: user.id,
-      username: user.username,
+      employee_id: user.employee_id,
       name: user.name,
       role: user.role,
       fingerprint_id: user.fingerprint_id,
@@ -526,7 +526,7 @@ app.get("/api/admin/employees", requireAdmin, async (req, res) => {
       const pks = u.passkeys || [];
       return {
         id: u.id,
-        username: u.username,
+        employee_id: u.employee_id,
         name: u.name,
         role: u.role,
         fingerprint_id: u.fingerprint_id,
@@ -547,16 +547,16 @@ app.get("/api/admin/employees", requireAdmin, async (req, res) => {
 });
 
 app.post("/api/admin/employees", requireAdmin, async (req, res) => {
-  const { username, name } = req.body;
-  if (!username) return res.status(400).json({ error: "Username wajib diisi" });
+  const { employee_id, name } = req.body;
+  if (!employee_id) return res.status(400).json({ error: "ID Karyawan wajib diisi" });
 
-  const existing = await User.findOne({ where: { username } });
+  const existing = await User.findOne({ where: { employee_id } });
   if (existing)
-    return res.status(409).json({ error: "Username sudah dipakai" });
+    return res.status(409).json({ error: "ID Karyawan sudah dipakai" });
 
   const user = await User.create({
-    username,
-    name: name || username,
+    employee_id,
+    name: name || employee_id,
     role: "employee",
   });
   res.json({ ok: true, user });
@@ -564,18 +564,18 @@ app.post("/api/admin/employees", requireAdmin, async (req, res) => {
 
 app.put("/api/admin/employees/:id", requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { name, username } = req.body;
+  const { name, employee_id } = req.body;
   const user = await User.findByPk(id);
   if (!user) return res.status(404).json({ error: "User tidak ditemukan" });
 
-  if (username && username !== user.username) {
-    const dup = await User.findOne({ where: { username } });
-    if (dup) return res.status(409).json({ error: "Username sudah dipakai" });
+  if (employee_id && employee_id !== user.employee_id) {
+    const dup = await User.findOne({ where: { employee_id } });
+    if (dup) return res.status(409).json({ error: "ID Karyawan sudah dipakai" });
   }
 
   await user.update({
     ...(name ? { name } : {}),
-    ...(username ? { username } : {}),
+    ...(employee_id ? { employee_id } : {}),
   });
   res.json({ ok: true, user });
 });
@@ -656,7 +656,7 @@ app.get("/api/admin/attendances", requireAdmin, async (req, res) => {
   const records = await Attendance.findAll({
     where,
     include: [
-      { model: User, as: "user", attributes: ["id", "username", "name"] },
+      { model: User, as: "user", attributes: ["id", "employee_id", "name"] },
     ],
     order: [["time", "DESC"]],
   });
@@ -678,7 +678,7 @@ app.get("/api/admin/report", requireAdmin, async (req, res) => {
   const records = await Attendance.findAll({
     where,
     include: [
-      { model: User, as: "user", attributes: ["id", "username", "name"] },
+      { model: User, as: "user", attributes: ["id", "employee_id", "name"] },
     ],
     order: [
       ["date", "ASC"],
@@ -693,7 +693,7 @@ app.get("/api/admin/report", requireAdmin, async (req, res) => {
     if (!map[key]) {
       map[key] = {
         userId: rec.user_id,
-        username: rec.user?.username || "",
+        employee_id: rec.user?.employee_id || "",
         name: rec.user?.name || "",
         date: rec.date,
         checkin: null,
@@ -708,7 +708,7 @@ app.get("/api/admin/report", requireAdmin, async (req, res) => {
     Object.values(map).sort((a, b) => {
       if (a.date < b.date) return -1;
       if (a.date > b.date) return 1;
-      return (a.name || a.username).localeCompare(b.name || b.username);
+      return (a.name || a.employee_id).localeCompare(b.name || b.employee_id);
     }),
   );
 });
@@ -718,16 +718,16 @@ app.get("/api/admin/report", requireAdmin, async (req, res) => {
 // ════════════════════════════════════════════════════════════════════════════
 
 app.post("/auth/identify", async (req, res) => {
-  const { username } = req.body;
-  if (!username)
-    return res.status(400).json({ error: "Nomor karyawan wajib diisi" });
+  const { employee_id } = req.body;
+  if (!employee_id)
+    return res.status(400).json({ error: "ID Karyawan wajib diisi" });
 
-  const user = await User.findOne({ where: { username } });
+  const user = await User.findOne({ where: { employee_id } });
   if (!user)
     return res
       .status(404)
       .json({
-        error: "Nomor karyawan tidak ditemukan. Hubungi administrator.",
+        error: "ID Karyawan tidak ditemukan. Hubungi administrator.",
       });
   if (user.role === "admin")
     return res.status(403).json({ error: "Akses ditolak" });
@@ -740,7 +740,7 @@ app.post("/auth/identify", async (req, res) => {
   res.json({
     ok: true,
     hasPasskey,
-    user: { id: user.id, username: user.username, name: user.name },
+    user: { id: user.id, employee_id: user.employee_id, name: user.name },
   });
 });
 
@@ -793,13 +793,13 @@ app.post("/attendance/checkin", async (req, res) => {
 
   // Broadcast ke semua WebSocket client
   const user = await User.findByPk(userId, {
-    attributes: ["username", "name"],
+    attributes: ["employee_id", "name"],
   });
   broadcast({
     type: "attendance_update",
     action: "checkin",
     userId,
-    user: { username: user.username, name: user.name },
+    user: { employee_id: user.employee_id, name: user.name },
     date: today,
     time: record.time,
   });
@@ -836,13 +836,13 @@ app.post("/attendance/checkout", async (req, res) => {
 
   // Broadcast ke semua WebSocket client
   const user = await User.findByPk(userId, {
-    attributes: ["username", "name"],
+    attributes: ["employee_id", "name"],
   });
   broadcast({
     type: "attendance_update",
     action: "checkout",
     userId,
-    user: { username: user.username, name: user.name },
+    user: { employee_id: user.employee_id, name: user.name },
     date: today,
     time: record.time,
   });
@@ -858,11 +858,11 @@ async function ensureDefaultAdmin() {
   const adminExists = await User.findOne({ where: { role: "admin" } });
   if (!adminExists) {
     await User.create({
-      username: "admin",
+      employee_id: "admin",
       name: "Administrator",
       role: "admin",
     });
-    console.log("✅ Default admin user created (username: admin)");
+    console.log("✅ Default admin user created (ID Karyawan: admin)");
   }
 }
 
