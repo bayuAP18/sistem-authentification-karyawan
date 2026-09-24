@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viewer Sequence Diagram - Sistem Autentikasi Karyawan</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=fallback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+  <style>
+    body { background: #0f172a; color: #f8fafc; font-family: 'Source Sans Pro', sans-serif; padding: 24px; }
+    .diagram-card {
+      background: #1e293b; border-radius: 12px; border: 1px solid #334155;
+      padding: 24px; margin-bottom: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .diagram-img {
+      width: 100%; max-width: 980px; height: auto; border-radius: 8px;
+      background: #ffffff; padding: 12px; display: block; margin: 16px auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn-action { margin-right: 8px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid" style="max-width: 1100px;">
+    <div class="text-center mb-4">
+      <h2><i class="fas fa-project-diagram text-primary mr-2"></i>Sequence Diagram UML (BCE Pattern)</h2>
+      <p class="text-muted">Sistem Autentikasi Karyawan berbasis WebAuthn & FIDO2 Fingerprint</p>
+      <div>
+        <a href="#absensi" class="btn btn-primary btn-action"><i class="fas fa-calendar-check mr-1"></i> SD: Absensi</a>
+        <a href="#register" class="btn btn-info btn-action"><i class="fas fa-fingerprint mr-1"></i> SD: Register Fingerprint</a>
+        <a href="#laporan" class="btn btn-warning btn-action text-dark"><i class="fas fa-file-invoice mr-1"></i> SD: Melihat Laporan Absensi</a>
+        <a href="#karyawan" class="btn btn-danger btn-action"><i class="fas fa-users-cog mr-1"></i> SD: Kelola Karyawan</a>
+        <a href="#act-register" class="btn btn-success btn-action"><i class="fas fa-sitemap mr-1"></i> ACT: Register Fingerprint</a>
+        <a href="#act-absensi" class="btn btn-info btn-action"><i class="fas fa-user-clock mr-1"></i> ACT: Absensi</a>
+        <a href="#class-diagram" class="btn btn-purple btn-action" style="background-color: #7c3aed; color: white;"><i class="fas fa-cubes mr-1"></i> Class Diagram</a>
+        <a href="#deployment-diagram" class="btn btn-action text-white" style="background-color: #0284c7;"><i class="fas fa-network-wired mr-1"></i> Deployment Diagram</a>
+        <a href="#component-diagram" class="btn btn-action text-white" style="background-color: #db2777;"><i class="fas fa-microchip mr-1"></i> Component Diagram</a>
+      </div>
+    </div>
+
+    <!-- 1. USE CASE ABSENSI -->
+    <div class="diagram-card" id="absensi">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-calendar-check text-success mr-2"></i>1. Sequence Diagram: Absensi (sd Absensi)</h4>
+          <span class="badge badge-success">Use Case Utama: Absensi</span>
+          <span class="badge badge-secondary ml-1">Entity: users, passkeys, attendances</span>
+        </div>
+        <div>
+          <a href="sequence-diagram-absensi.png" download="sequence-diagram-absensi.png" class="btn btn-success btn-sm btn-action">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="sequence-diagram-absensi.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Diagram interaksi untuk use case <strong>Absensi</strong>. Aktor <code>Karyawan</code> berinteraksi dengan antarmuka <code>Halaman Absensi</code>, divalidasi oleh <code>Proses Absensi</code>, melakukan autentikasi biometrik melalui data di tabel <code>users</code> dan <code>passkeys</code>, dan mencatat kehadiran di tabel <code>attendances</code>.
+      </p>
+      <img src="sequence-diagram-absensi.png" alt="Sequence Diagram Absensi" class="diagram-img">
+    </div>
+
+    <!-- 2. USE CASE REGISTER FINGERPRINT -->
+    <div class="diagram-card" id="register">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-fingerprint text-info mr-2"></i>2. Sequence Diagram: Register Fingerprint (sd Register Fingerprint)</h4>
+          <span class="badge badge-info">&lt;&lt;include&gt;&gt; dari Absensi</span>
+          <span class="badge badge-secondary ml-1">Entity: users, passkeys</span>
+        </div>
+        <div>
+          <a href="sequence-diagram-register-fingerprint.png" download="sequence-diagram-register-fingerprint.png" class="btn btn-info btn-sm btn-action">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="sequence-diagram-register-fingerprint.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Diagram interaksi pendaftaran kredensial sidik jari FIDO2. Data biometrik publik disimpan pada tabel <code>passkeys</code> dan pengenal unik perangkat diikatkan ke tabel <code>users</code>.
+      </p>
+      <img src="sequence-diagram-register-fingerprint.png" alt="Sequence Diagram Register Fingerprint" class="diagram-img">
+    </div>
+
+    <!-- 3. USE CASE MELIHAT LAPORAN ABSENSI -->
+    <div class="diagram-card" id="laporan">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-file-invoice text-warning mr-2"></i>3. Sequence Diagram: Melihat Laporan Absensi (sd Melihat Laporan Absensi)</h4>
+          <span class="badge badge-warning text-dark">Aktor: HRD</span>
+          <span class="badge badge-secondary ml-1">Entity: attendances</span>
+        </div>
+        <div>
+          <a href="sequence-diagram-melihat-laporan-absensi.png" download="sequence-diagram-melihat-laporan-absensi.png" class="btn btn-warning text-dark btn-sm btn-action">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="sequence-diagram-melihat-laporan-absensi.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Diagram interaksi use case <strong>Melihat Laporan Absensi</strong> oleh aktor <code>HRD</code>. HRD membuka <code>Halaman Dashboard</code>, masuk ke <code>Halaman Laporan Absensi</code>, melakukan filter data tanggal, diolah oleh <code>Proses get data</code> ke entitas <code>attendances</code>, hingga ekspor dan download file laporan.
+      </p>
+      <img src="sequence-diagram-melihat-laporan-absensi.png" alt="Sequence Diagram Melihat Laporan Absensi" class="diagram-img">
+    </div>
+
+    <!-- 4. USE CASE KELOLA KARYAWAN -->
+    <div class="diagram-card" id="karyawan">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-users-cog text-danger mr-2"></i>4. Sequence Diagram: Kelola Karyawan (sd Kelola Data Karyawan)</h4>
+          <span class="badge badge-danger">Aktor: HRD</span>
+          <span class="badge badge-secondary ml-1">Entity: users</span>
+        </div>
+        <div>
+          <a href="sequence-diagram-kelola-karyawan.png" download="sequence-diagram-kelola-karyawan.png" class="btn btn-danger btn-sm btn-action">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="sequence-diagram-kelola-karyawan.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Diagram interaksi use case <strong>Kelola Data Karyawan</strong> mencakup operasi CRUD lengkap (Menambah, Mengubah, dan Menghapus data) dengan validasi kontrol terhadap entitas tabel <code>users</code>.
+      </p>
+      <img src="sequence-diagram-kelola-karyawan.png" alt="Sequence Diagram Kelola Karyawan" class="diagram-img">
+    </div>
+
+    <!-- 5. ACTIVITY DIAGRAM REGISTER FINGERPRINT -->
+    <div class="diagram-card" id="act-register">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-sitemap text-success mr-2"></i>5. Activity Diagram: Register Fingerprint (act Register Fingerprint)</h4>
+          <span class="badge badge-success">Partisi / Swimlane: Karyawan & Sistem</span>
+          <span class="badge badge-secondary ml-1">Berdasarkan sd Register Fingerprint</span>
+        </div>
+        <div>
+          <a href="activity-diagram-register-fingerprint.png" download="activity-diagram-register-fingerprint.png" class="btn btn-success btn-sm btn-action">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="activity-diagram-register-fingerprint.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Alur kerja (workflow) pendaftaran sidik jari biometrik antara aktor <strong>Karyawan</strong> dan <strong>Sistem</strong>, dimulai dari pembukaan form registrasi, pengisian nomor karyawan, pemindaian sensor biometrik WebAuthn, verifikasi, hingga penyimpanan kredensial passkey.
+      </p>
+      <img src="activity-diagram-register-fingerprint.png" alt="Activity Diagram Register Fingerprint" class="diagram-img">
+    </div>
+
+    <!-- 6. ACTIVITY DIAGRAM ABSENSI -->
+    <div class="diagram-card" id="act-absensi">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-user-clock text-info mr-2"></i>6. Activity Diagram: Absensi (act Absensi)</h4>
+          <span class="badge badge-info">Partisi / Swimlane: Karyawan & Sistem</span>
+          <span class="badge badge-secondary ml-1">Berdasarkan sd Absensi</span>
+        </div>
+        <div>
+          <a href="activity-diagram-absensi.png" download="activity-diagram-absensi.png" class="btn btn-info btn-sm btn-action">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="activity-diagram-absensi.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Alur kerja (workflow) proses presensi kehadiran harian antara aktor <strong>Karyawan</strong> dan <strong>Sistem</strong>, meliputi input nomor karyawan, validasi data pengguna, pengiriman WebAuthn authentication challenge, pemindaian biometrik sidik jari, verifikasi kredensial passkey, pencatatan log presensi ke tabel <code>attendances</code>, hingga penayangan status berhasil absensi.
+      </p>
+      <img src="activity-diagram-absensi.png" alt="Activity Diagram Absensi" class="diagram-img">
+    </div>
+
+    <!-- 7. CLASS DIAGRAM -->
+    <div class="diagram-card" id="class-diagram">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-cubes text-purple mr-2" style="color: #a855f7;"></i>7. Class Diagram (BCE + Entity Architecture)</h4>
+          <span class="badge badge-primary" style="background-color: #7c3aed;">Tampilan: Interface</span>
+          <span class="badge badge-warning text-dark ml-1">Proses: Control</span>
+          <span class="badge badge-info ml-1">Entitas: users, passkeys, attendances</span>
+        </div>
+        <div>
+          <a href="class-diagram.png" download="class-diagram.png" class="btn btn-sm btn-action text-white" style="background-color: #7c3aed;">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="class-diagram.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Struktur <strong>Class Diagram</strong> lengkap untuk sistem autentikasi dan presensi karyawan berbasis WebAuthn. Diagram ini mengadopsi pola 3-layer (Tampilan/Interface, Proses/Control, dan Entitas Database dari <code>webauth.sql</code>) yang merefleksikan hubungan <code>Memiliki</code>, pewarisan <code>Mewarisi</code> (Generalization), relasi <code>Melakukan</code> terhadap Controller/Proses, pemanggilan <code>Mengakses</code> ke entitas basis data, serta relasi Foreign Key (<code>users</code> 1 to 0..* <code>passkeys</code> dan <code>users</code> 1 to 0..* <code>attendances</code>).
+      </p>
+      <img src="class-diagram.png" alt="Class Diagram Sistem Autentikasi Karyawan" class="diagram-img">
+    </div>
+
+    <!-- 8. DEPLOYMENT DIAGRAM -->
+    <div class="diagram-card" id="deployment-diagram">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-network-wired mr-2" style="color: #38bdf8;"></i>8. Deployment Diagram (deployment Deployment)</h4>
+          <span class="badge badge-info" style="background-color: #0284c7;">3-Tier Architecture</span>
+          <span class="badge badge-secondary ml-1">&laquo;device&raquo; Client, Server, Database</span>
+          <span class="badge badge-success ml-1">Request / Response Protocols</span>
+        </div>
+        <div>
+          <a href="deployment-diagram.png" download="deployment-diagram.png" class="btn btn-sm btn-action text-white" style="background-color: #0284c7;">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="deployment-diagram.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Arsitektur fisik <strong>Deployment Diagram</strong> sistem autentikasi karyawan berbasis 3-tier node. Meliputi node fisik <code>&laquo;device&raquo; Client</code> (menjalankan execution environment <code>Application Client</code> dengan komponen <code>Web Browser</code> berkemampuan WebAuthn FIDO2), node <code>&laquo;device&raquo; Server</code> (menampung <code>Web Server</code> dengan komponen <code>Node.js / Express</code> dan <code>Application Server</code> dengan komponen <code>SimpleWebAuthn</code> serta <code>Sequelize ORM & WS</code>), serta node <code>&laquo;device&raquo; Database</code> (menjalankan <code>DBMS</code> dengan komponen <code>MySQL</code> terhubung ke basis data <code>webauth</code>). Komunikasi antar-node dimodelkan melalui pesan dua arah <strong>Request</strong> dan <strong>Response</strong>.
+      </p>
+      <img src="deployment-diagram.png" alt="Deployment Diagram Sistem Autentikasi Karyawan" class="diagram-img">
+    </div>
+
+    <!-- 9. COMPONENT DIAGRAM -->
+    <div class="diagram-card" id="component-diagram">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h4 class="text-white mb-1"><i class="fas fa-microchip mr-2" style="color: #f472b6;"></i>9. Component Diagram (cmp Component)</h4>
+          <span class="badge badge-primary" style="background-color: #db2777;">Modular Architecture</span>
+          <span class="badge badge-warning text-dark ml-1">&laquo;use&raquo; Dependencies</span>
+          <span class="badge badge-secondary ml-1">Database Schema: webauth.sql</span>
+        </div>
+        <div>
+          <a href="component-diagram.png" download="component-diagram.png" class="btn btn-sm btn-action text-white" style="background-color: #db2777;">
+            <i class="fas fa-download mr-1"></i> Download Gambar PNG
+          </a>
+          <a href="component-diagram.png" target="_blank" class="btn btn-outline-light btn-sm btn-action">
+            <i class="fas fa-external-link-alt mr-1"></i> Buka Full Resolusi
+          </a>
+        </div>
+      </div>
+      <hr style="border-color: #334155;">
+      <p class="text-light">
+        Struktur modular <strong>Component Diagram</strong> sistem presensi dan autentikasi biometrik sidik jari. Diagram ini memodelkan:
+      </p>
+      <ul class="text-light">
+        <li><strong>Komponen Perimeter (Stack Teknologi):</strong> <code>Web Browser</code>, <code>Web Server</code>, <code>Node.js</code>, <code>SimpleWebAuthn</code>, <code>WebSocket (ws)</code>, <code>Sequelize ORM</code>, <code>Express Session</code>, <code>FIDO2 Authenticator</code>, dan <code>MySQL</code> yang terhubung melalui dependensi <code>&laquo;use&raquo;</code> ke proses sentral sistem.</li>
+        <li><strong>Intermediary Component:</strong> <code>Node.js / Express</code> sebagai controller dan runtime penghubung logika server ke view.</li>
+        <li><strong>Container Component View:</strong> Memuat 7 antarmuka halaman (<code>Halaman Registrasi</code>, <code>Halaman Login Admin</code>, <code>Halaman Dashboard</code>, <code>Halaman Data Karyawan</code>, <code>Halaman Presensi</code>, <code>Halaman Rekap & Laporan</code>, dan <code>Halaman Setup Passkey (WebAuthn)</code>).</li>
+        <li><strong>Container Component Database:</strong> Berisi entitas tabel dari <code>webauth.sql</code> (<code>Users</code>, <code>Passkeys</code>, dan <code>Attendances</code>) dengan garis dependensi langsung <code>&laquo;use&raquo;</code> dari komponen <code>MySQL</code>.</li>
+      </ul>
+      <img src="component-diagram.png" alt="Component Diagram Sistem Autentikasi Karyawan" class="diagram-img">
+    </div>
+
+  </div>
+</body>
+</html>

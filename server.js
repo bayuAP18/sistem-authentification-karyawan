@@ -174,7 +174,17 @@ Attendance.belongsTo(User, { foreignKey: "user_id", as: "user" });
 // ════════════════════════════════════════════════════════════════════════════
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(express.json());
+
+// Routes eksplisit halaman
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+app.get("/user", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "user.html"));
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({

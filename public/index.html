@@ -3,76 +3,568 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WebAuth - Pilih Portal</title>
+  <title>Absensi Karyawan</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
+  <script src="https://unpkg.com/@simplewebauthn/browser@9.0.1/dist/bundle/index.umd.min.js"></script>
   <style>
     body { background: #1a2035; }
-    .portal-btn {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 18px; border-radius: .375rem;
-      text-decoration: none; color: #fff; margin-bottom: 10px;
-      transition: opacity .2s, transform .15s;
+    /* screens */
+    .screen { display: none; }
+    .screen.active { display: block; }
+    /* user chip */
+    .user-chip {
+      display: flex; align-items: center; gap: 12px;
+      background: #f8f9fa; border-radius: .375rem;
+      padding: 10px 14px; margin-bottom: 18px;
+      border: 1px solid #dee2e6;
     }
-    .portal-btn:last-child { margin-bottom: 0; }
-    .portal-btn:hover { opacity: .88; transform: translateX(3px); color: #fff; text-decoration: none; }
-    .portal-btn .btn-icon {
-      width: 46px; height: 46px; border-radius: .375rem;
+    .user-chip .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #007bff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; flex-shrink: 0; background: rgba(255,255,255,.2);
+      flex-shrink: 0; color: #fff; font-size: 1.1rem;
     }
-    .portal-btn .btn-label { font-weight: 600; font-size: .95rem; line-height: 1.3; }
-    .portal-btn .btn-desc  { font-size: .75rem; opacity: .75; }
+    .user-chip .info .name { font-weight: 700; font-size: .9rem; }
+    .user-chip .info .num  { font-size: .75rem; color: #6c757d; margin-top: 1px; }
+    /* setup icon */
+    .setup-icon {
+      width: 72px; height: 72px;
+      background: #fff3cd; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px; font-size: 2rem; color: #d97706;
+    }
+    /* attendance status boxes */
+    .att-status-row { display: flex; gap: 10px; margin-bottom: 18px; }
+    .att-status-box {
+      flex: 1; border-radius: .375rem; padding: 14px 10px; text-align: center;
+      border: 1px solid #dee2e6; background: #f8f9fa; transition: all .3s;
+    }
+    .att-status-box .s-icon  { font-size: 1.3rem; margin-bottom: 6px; color: #adb5bd; }
+    .att-status-box .s-label { font-size: .7rem; color: #adb5bd; text-transform: uppercase; letter-spacing: .5px; }
+    .att-status-box .s-time  { font-size: .88rem; font-weight: 700; color: #343a40; margin-top: 4px; }
+    .att-status-box.done-in  { border-color: #28a745; background: #d4edda; }
+    .att-status-box.done-in  .s-icon { color: #28a745; }
+    .att-status-box.done-out { border-color: #007bff; background: #cce5ff; }
+    .att-status-box.done-out .s-icon { color: #007bff; }
+    /* device chip */
+    .device-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: #e9f0ff; border-radius: .375rem;
+      padding: 7px 12px; margin-top: 12px; font-size: .74rem; color: #495057;
+    }
+    .device-chip i { color: #007bff; }
+    .device-chip .fp-id {
+      font-family: monospace; color: #0056b3; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;
+    }
+    /* all done */
+    .all-done { text-align: center; padding: 4px 0; }
+    .all-done .done-icon {
+      width: 60px; height: 60px; background: #28a745; border-radius: 50%;
+      margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #fff;
+    }
+    .all-done h5 { color: #155724; margin-bottom: 4px; }
+    .all-done p  { font-size: .83rem; color: #6c757d; }
+    /* spinner inside btn */
+    .spinner-border-sm { width: 1rem; height: 1rem; border-width: .15em; }
+    /* date badge */
+    .date-badge { text-align: center; margin-bottom: 16px; }
+    .date-badge .today-date { font-size: 1rem; font-weight: 700; }
+    .date-badge .today-time { font-size: .85rem; color: #6c757d; }
+    /* login-box override width for this page */
+    .login-box { width: 400px; }
+    @media (max-width: 480px) { .login-box { width: 100%; } }
   </style>
 </head>
-<body class="hold-transition">
+<body class="hold-transition login-page">
 
-<div class="d-flex align-items-center justify-content-center" style="min-height:100vh; padding:16px;">
-  <div style="width:360px; margin:0">
+<div class="login-box">
 
-    <div class="login-logo">
-      <i class="fas fa-fingerprint fa-2x text-primary"></i><br>
-      <b class="text-white">WebAuth</b>
-    </div>
-
-    <div class="card card-outline card-primary">
-      <div class="card-header text-center pb-1">
-        <h5 class="mb-0"><i class="fas fa-th-large mr-1 text-primary"></i>Pilih Portal</h5>
-        <small class="text-muted">Sistem Autentikasi Fingerprint</small>
-      </div>
-      <div class="card-body">
-
-        <a class="portal-btn bg-success" href="/user.html">
-          <div class="btn-icon"><i class="fas fa-mobile-alt text-white"></i></div>
-          <div>
-            <div class="btn-label">Portal Karyawan</div>
-            <div class="btn-desc">Absensi check-in &amp; check-out fingerprint</div>
-          </div>
-          <i class="fas fa-chevron-right ml-auto"></i>
-        </a>
-
-        <a class="portal-btn bg-warning" href="/admin.html">
-          <div class="btn-icon"><i class="fas fa-tachometer-alt text-white"></i></div>
-          <div>
-            <div class="btn-label">Admin Dashboard</div>
-            <div class="btn-desc">Manajemen karyawan &amp; data absensi</div>
-          </div>
-          <i class="fas fa-chevron-right ml-auto"></i>
-        </a>
-
-      </div>
-      <div class="card-footer text-center" style="font-size:.75rem">
-        <i class="fas fa-shield-alt mr-1 text-muted"></i>
-        <span class="text-muted">WebAuthn &bull; FIDO2 &bull; FingerprintJS</span>
-      </div>
-    </div>
-
+  <div class="login-logo">
+    <i class="fas fa-fingerprint fa-2x text-primary"></i><br>
+    <b class="text-dark">Absensi Karyawan</b>
   </div>
-</div>
+
+  <div class="card card-outline card-primary">
+
+    <!-- CARD HEADER -->
+    <div class="card-header text-center pb-1" id="card-header-area">
+      <h5 class="mb-0" id="header-title">Masuk</h5>
+      <small class="text-muted" id="header-sub">Masukkan nomor karyawan Anda</small>
+    </div>
+
+    <!-- CARD BODY -->
+    <div class="card-body">
+
+      <!-- ALERT GLOBAL -->
+      <div id="global-alert" class="alert d-none">
+        <i class="fas fa-info-circle"></i>
+        <span id="global-alert-msg"></span>
+      </div>
+
+      <!-- SCREEN 1: Nomor Karyawan -->
+      <div class="screen active" id="screen-identify">
+        <div class="input-group mb-3">
+          <input type="text" id="inp-nomor" class="form-control"
+                 placeholder="Nomor Karyawan" autocomplete="off"
+                 onkeydown="if(event.key==='Enter') doIdentify()">
+          <div class="input-group-append">
+            <div class="input-group-text"><i class="fas fa-id-badge"></i></div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="btn-identify" onclick="doIdentify()">
+          <i class="fas fa-arrow-right mr-1"></i> Lanjut
+        </button>
+      </div>
+
+      <!-- SCREEN 2a: Setup Passkey -->
+      <div class="screen" id="screen-setup">
+        <div class="user-chip">
+          <div class="avatar"><i class="fas fa-user"></i></div>
+          <div class="info">
+            <div class="name" id="setup-name">-</div>
+            <div class="num"  id="setup-num">-</div>
+          </div>
+        </div>
+        <div class="setup-icon"><i class="fas fa-fingerprint"></i></div>
+        <p class="login-box-msg">Passkey belum diatur. Setup fingerprint untuk bisa absen.</p>
+        <button class="btn btn-warning btn-block" id="btn-setup" onclick="doSetupPasskey()">
+          <i class="fas fa-fingerprint mr-1"></i> Setup Passkey Sekarang
+        </button>
+        <button class="btn btn-default btn-block mt-2" onclick="goBack()">
+          <i class="fas fa-arrow-left mr-1"></i> Kembali
+        </button>
+        <div class="device-chip d-none" id="setup-device-chip">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Device ID:</span>
+          <span class="fp-id" id="setup-fp-id">-</span>
+        </div>
+      </div>
+
+      <!-- SCREEN 2b: Absensi -->
+      <div class="screen" id="screen-attendance">
+        <div class="user-chip">
+          <div class="avatar"><i class="fas fa-user"></i></div>
+          <div class="info">
+            <div class="name" id="att-name">-</div>
+            <div class="num"  id="att-num">-</div>
+          </div>
+        </div>
+        <div class="date-badge">
+          <div class="today-date" id="att-date">-</div>
+          <div class="today-time" id="att-clock">-</div>
+        </div>
+        <div class="att-status-row">
+          <div class="att-status-box" id="box-checkin">
+            <div class="s-icon"><i class="fas fa-sign-in-alt"></i></div>
+            <div class="s-label">Check-In</div>
+            <div class="s-time" id="checkin-time">Belum</div>
+          </div>
+          <div class="att-status-box" id="box-checkout">
+            <div class="s-icon"><i class="fas fa-sign-out-alt"></i></div>
+            <div class="s-label">Check-Out</div>
+            <div class="s-time" id="checkout-time">Belum</div>
+          </div>
+        </div>
+
+        <div id="att-actions">
+          <button class="btn btn-success btn-block" id="btn-checkin" onclick="doCheckin()">
+            <i class="fas fa-fingerprint mr-1"></i> Check-In dengan Fingerprint
+          </button>
+          <button class="btn btn-danger btn-block mt-2" id="btn-checkout" onclick="doCheckout()" style="display:none">
+            <i class="fas fa-fingerprint mr-1"></i> Check-Out dengan Fingerprint
+          </button>
+        </div>
+
+        <div class="all-done" id="all-done" style="display:none">
+          <div class="done-icon"><i class="fas fa-check"></i></div>
+          <h5>Absensi Selesai!</h5>
+          <p>Check-in dan check-out hari ini sudah tercatat.</p>
+        </div>
+
+        <div class="device-chip d-none" id="att-device-chip">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Device ID:</span>
+          <span class="fp-id" id="att-fp-id">-</span>
+        </div>
+
+        <hr>
+        <button class="btn btn-default btn-block" onclick="doLogout()">
+          <i class="fas fa-exchange-alt mr-1"></i> Ganti Karyawan
+        </button>
+      </div>
+
+      <!-- SCREEN 3: Device Warning -->
+      <div class="screen" id="screen-device-warning">
+        <div class="callout callout-warning">
+          <h5><i class="fas fa-exclamation-triangle mr-1"></i>Perangkat Berbeda!</h5>
+          <p>Login terdeteksi dari perangkat yang berbeda dengan perangkat terdaftar.</p>
+          <p><strong>Silakan minta reset ke Administrator</strong><br>
+          Hubungi admin untuk mereset passkey Anda, lalu daftarkan ulang dari perangkat baru ini.</p>
+        </div>
+        <button class="btn btn-default btn-block mt-2" onclick="goBack()">
+          <i class="fas fa-arrow-left mr-1"></i> Kembali
+        </button>
+      </div>
+
+    </div><!-- /card-body -->
+
+    <div class="card-footer text-center" style="font-size:.75rem">
+      <i class="fas fa-shield-alt mr-1 text-muted"></i>
+      <span class="text-muted">WebAuthn &bull; FIDO2 &bull; FingerprintJS</span>
+    </div>
+
+  </div><!-- /card -->
+
+</div><!-- /login-box -->
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+<script>
+// STATE
+let fpVisitorId = null;
+let currentUser = null;
+let clockInterval = null;
+
+// FINGERPRINTJS
+(async () => {
+  try {
+    const FP = await FingerprintJS.load();
+    const result = await FP.get();
+    fpVisitorId = result.visitorId;
+    ['setup-fp-id', 'att-fp-id'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = fpVisitorId;
+    });
+    document.getElementById('setup-device-chip').classList.remove('d-none');
+    document.getElementById('att-device-chip').classList.remove('d-none');
+  } catch (e) { console.warn('FingerprintJS gagal:', e); }
+})();
+
+// CLOCK
+function startClock() {
+  function tick() {
+    const now = new Date();
+    document.getElementById('att-date').textContent = now.toLocaleDateString('id-ID', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+    document.getElementById('att-clock').textContent = now.toLocaleTimeString('id-ID');
+  }
+  tick(); clockInterval = setInterval(tick, 1000);
+}
+function stopClock() {
+  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+}
+
+// SCREEN SWITCHING
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function updateHeader(title, sub) {
+  document.getElementById('header-title').textContent = title;
+  document.getElementById('header-sub').textContent = sub;
+}
+function goBack() {
+  stopClock(); currentUser = null; hideAlert();
+  document.getElementById('inp-nomor').value = '';
+  updateHeader('Masuk', 'Masukkan nomor karyawan Anda');
+  showScreen('screen-identify');
+}
+
+// ALERT
+function showAlert(msg, type='danger') {
+  const el = document.getElementById('global-alert');
+  const icons = { danger:'times-circle', success:'check-circle', warning:'exclamation-triangle', info:'info-circle' };
+  el.className = `alert alert-${type}`;
+  el.querySelector('i').className = `fas fa-${icons[type]||'info-circle'}`;
+  document.getElementById('global-alert-msg').textContent = msg;
+}
+function hideAlert() {
+  document.getElementById('global-alert').classList.add('d-none');
+}
+
+// BTN LOADING
+function setLoading(btnId, loading, icon, text) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<span class="spinner-border spinner-border-sm mr-2" role="status"></span>Memproses...`
+    : `<i class="fas ${icon} mr-1"></i>${text}`;
+}
+
+// IDENTIFY
+async function doIdentify() {
+  const nomor = document.getElementById('inp-nomor').value.trim();
+  if (!nomor) { showAlert('Masukkan nomor karyawan terlebih dahulu'); return; }
+  hideAlert();
+  setLoading('btn-identify', true, 'fa-arrow-right', 'Lanjut');
+  try {
+    const res = await fetch('/auth/identify', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ employee_id: nomor }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showAlert(data.error || 'Nomor karyawan tidak ditemukan');
+      setLoading('btn-identify', false, 'fa-arrow-right', 'Lanjut');
+      return;
+    }
+    currentUser = data.user;
+    setLoading('btn-identify', false, 'fa-arrow-right', 'Lanjut');
+    if (data.hasPasskey) { await doLoginThenShowAttendance(); }
+    else { showSetupScreen(); }
+  } catch (e) {
+    showAlert('Terjadi kesalahan. Coba lagi.');
+    setLoading('btn-identify', false, 'fa-arrow-right', 'Lanjut');
+  }
+}
+
+// SETUP
+function showSetupScreen() {
+  document.getElementById('setup-name').textContent = currentUser.name || currentUser.employee_id;
+  document.getElementById('setup-num').textContent = `ID Karyawan: ${currentUser.employee_id}`;
+  hideAlert();
+  updateHeader('Setup Passkey', 'Daftarkan fingerprint Anda');
+  showScreen('screen-setup');
+}
+
+async function doSetupPasskey() {
+  if (!currentUser) return;
+  hideAlert();
+  setLoading('btn-setup', true, 'fa-fingerprint', 'Setup Passkey Sekarang');
+  try {
+    const beginRes = await fetch('/auth/register/begin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ employee_id: currentUser.employee_id }),
+    });
+    if (!beginRes.ok) {
+      const d = await beginRes.json();
+      showAlert(d.error || 'Gagal memulai setup passkey');
+      setLoading('btn-setup', false, 'fa-fingerprint', 'Setup Passkey Sekarang'); return;
+    }
+    const options = await beginRes.json();
+    let regResp;
+    try { regResp = await SimpleWebAuthnBrowser.startRegistration(options); }
+    catch (e) {
+      if (e.name==='NotAllowedError') showAlert('Setup passkey dibatalkan');
+      else if (e.name==='InvalidStateError') showAlert('Passkey sudah terdaftar di perangkat ini');
+      else showAlert(`Error: ${e.message}`);
+      setLoading('btn-setup', false, 'fa-fingerprint', 'Setup Passkey Sekarang'); return;
+    }
+    const completeRes = await fetch('/auth/register/complete', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ...regResp, fingerprintId: fpVisitorId }),
+    });
+    const result = await completeRes.json();
+    if (!completeRes.ok) {
+      showAlert(result.error || 'Gagal mendaftarkan passkey');
+      setLoading('btn-setup', false, 'fa-fingerprint', 'Setup Passkey Sekarang'); return;
+    }
+    showAlert('Passkey berhasil didaftarkan! Silakan verifikasi fingerprint.', 'success');
+    setLoading('btn-setup', false, 'fa-fingerprint', 'Setup Passkey Sekarang');
+    setTimeout(() => doLoginThenShowAttendance(), 1500);
+  } catch (e) {
+    showAlert('Terjadi kesalahan. Silakan coba lagi.');
+    setLoading('btn-setup', false, 'fa-fingerprint', 'Setup Passkey Sekarang');
+  }
+}
+
+// LOGIN WebAuthn
+async function doLoginThenShowAttendance() {
+  hideAlert();
+  try {
+    const beginRes = await fetch('/auth/login/begin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ employee_id: currentUser.employee_id }),
+    });
+    if (!beginRes.ok) {
+      const d = await beginRes.json();
+      showAlert(d.error || 'Gagal memulai autentikasi'); return;
+    }
+    const options = await beginRes.json();
+    let authResp;
+    try { authResp = await SimpleWebAuthnBrowser.startAuthentication(options); }
+    catch (e) {
+      if (e.name==='NotAllowedError') showAlert('Verifikasi fingerprint dibatalkan');
+      else showAlert(`Error: ${e.message}`);
+      return;
+    }
+    const completeRes = await fetch('/auth/login/complete', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ...authResp, fingerprintId: fpVisitorId }),
+    });
+    const result = await completeRes.json();
+    if (!completeRes.ok) { showAlert(result.error || 'Autentikasi gagal'); return; }
+    if (result.deviceWarning === 'BEDA_DEVICE') {
+      updateHeader('Perangkat Berbeda', 'Hubungi administrator');
+      showScreen('screen-device-warning'); return;
+    }
+    await showAttendanceScreen();
+  } catch (e) { showAlert('Terjadi kesalahan. Coba lagi.'); }
+}
+
+// ATTENDANCE SCREEN
+async function showAttendanceScreen() {
+  const meRes = await fetch('/auth/me');
+  const me = await meRes.json();
+  if (!me.loggedIn) { goBack(); return; }
+  currentUser = me.user;
+  document.getElementById('att-name').textContent = currentUser.name || currentUser.employee_id;
+  document.getElementById('att-num').textContent = `ID Karyawan: ${currentUser.employee_id}`;
+  hideAlert();
+  updateHeader('Absensi', 'Check-in / Check-out dengan fingerprint');
+  showScreen('screen-attendance');
+  startClock();
+  await refreshAttendanceStatus();
+}
+
+async function refreshAttendanceStatus() {
+  try {
+    const res = await fetch('/attendance/today');
+    if (!res.ok) return;
+    const data = await res.json();
+    const ciBox   = document.getElementById('box-checkin');
+    const coBox   = document.getElementById('box-checkout');
+    const btnCI   = document.getElementById('btn-checkin');
+    const btnCO   = document.getElementById('btn-checkout');
+    const allDone = document.getElementById('all-done');
+    ciBox.classList.remove('done-in'); coBox.classList.remove('done-out');
+    document.getElementById('checkin-time').textContent  = 'Belum';
+    document.getElementById('checkout-time').textContent = 'Belum';
+    btnCI.style.display = ''; btnCO.style.display = 'none';
+    allDone.style.display = 'none';
+    if (data.checkIn) {
+      const t = new Date(data.checkIn.time).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+      document.getElementById('checkin-time').textContent = t;
+      ciBox.classList.add('done-in');
+      btnCI.style.display = 'none'; btnCO.style.display = '';
+    }
+    if (data.checkOut) {
+      const t = new Date(data.checkOut.time).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+      document.getElementById('checkout-time').textContent = t;
+      coBox.classList.add('done-out');
+      btnCO.style.display = 'none'; allDone.style.display = 'block';
+    }
+  } catch (e) { console.error(e); }
+}
+
+// CHECK-IN
+async function doCheckin() {
+  hideAlert();
+  setLoading('btn-checkin', true, 'fa-fingerprint', 'Check-In dengan Fingerprint');
+  try {
+    const ok = await verifyBiometric();
+    if (!ok) { setLoading('btn-checkin', false, 'fa-fingerprint', 'Check-In dengan Fingerprint'); return; }
+    const ciRes = await fetch('/attendance/checkin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ fingerprintId: fpVisitorId }),
+    });
+    const ciData = await ciRes.json();
+    if (!ciRes.ok) { showAlert(ciData.error || 'Gagal check-in'); setLoading('btn-checkin', false, 'fa-fingerprint', 'Check-In dengan Fingerprint'); return; }
+    showAlert('Check-in berhasil!', 'success');
+    setLoading('btn-checkin', false, 'fa-fingerprint', 'Check-In dengan Fingerprint');
+    await refreshAttendanceStatus();
+  } catch (e) {
+    showAlert('Terjadi kesalahan.');
+    setLoading('btn-checkin', false, 'fa-fingerprint', 'Check-In dengan Fingerprint');
+  }
+}
+
+// CHECK-OUT
+async function doCheckout() {
+  hideAlert();
+  setLoading('btn-checkout', true, 'fa-fingerprint', 'Check-Out dengan Fingerprint');
+  try {
+    const ok = await verifyBiometric();
+    if (!ok) { setLoading('btn-checkout', false, 'fa-fingerprint', 'Check-Out dengan Fingerprint'); return; }
+    const coRes = await fetch('/attendance/checkout', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ fingerprintId: fpVisitorId }),
+    });
+    const coData = await coRes.json();
+    if (!coRes.ok) { showAlert(coData.error || 'Gagal check-out'); setLoading('btn-checkout', false, 'fa-fingerprint', 'Check-Out dengan Fingerprint'); return; }
+    showAlert('Check-out berhasil!', 'success');
+    setLoading('btn-checkout', false, 'fa-fingerprint', 'Check-Out dengan Fingerprint');
+    await refreshAttendanceStatus();
+  } catch (e) {
+    showAlert('Terjadi kesalahan.');
+    setLoading('btn-checkout', false, 'fa-fingerprint', 'Check-Out dengan Fingerprint');
+  }
+}
+
+// VERIFY BIOMETRIC
+async function verifyBiometric() {
+  try {
+    const beginRes = await fetch('/auth/login/begin', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ employee_id: currentUser.employee_id }),
+    });
+    if (!beginRes.ok) { const d = await beginRes.json(); showAlert(d.error || 'Gagal memulai verifikasi'); return false; }
+    const options = await beginRes.json();
+    let authResp;
+    try { authResp = await SimpleWebAuthnBrowser.startAuthentication(options); }
+    catch (e) {
+      if (e.name==='NotAllowedError') showAlert('Verifikasi dibatalkan');
+      else showAlert(`Error: ${e.message}`);
+      return false;
+    }
+    const vRes = await fetch('/auth/login/complete', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ...authResp, fingerprintId: fpVisitorId }),
+    });
+    const vData = await vRes.json();
+    if (!vRes.ok) { showAlert(vData.error || 'Verifikasi gagal'); return false; }
+    if (vData.deviceWarning === 'BEDA_DEVICE') {
+      updateHeader('Perangkat Berbeda', 'Hubungi administrator');
+      showScreen('screen-device-warning'); return false;
+    }
+    return true;
+  } catch (e) { showAlert('Terjadi kesalahan saat verifikasi.'); return false; }
+}
+
+// LOGOUT
+async function doLogout() {
+  await fetch('/auth/logout', { method: 'POST' });
+  stopClock(); goBack();
+}
+
+// INIT: cek session aktif
+(async () => {
+  try {
+    const r = await fetch('/auth/me');
+    if (r.ok) {
+      const d = await r.json();
+      if (d.loggedIn) { currentUser = d.user; await showAttendanceScreen(); }
+    }
+  } catch (e) {}
+})();
+
+// ── WEBSOCKET — Auto-refresh status absensi saat server push ─────────────────
+let _ws;
+function connectWS() {
+  _ws = new WebSocket(`ws://${location.host}`);
+
+  _ws.addEventListener('message', (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'attendance_update' && currentUser && msg.userId === currentUser.id) {
+        // Server mengkonfirmasi check-in/out kita → refresh tampilan status
+        refreshAttendanceStatus();
+      }
+    } catch (e) { /* ignore */ }
+  });
+
+  _ws.addEventListener('close', () => setTimeout(connectWS, 3000));
+  _ws.addEventListener('error', () => _ws.close());
+}
+connectWS();
+</script>
 </body>
 </html>
