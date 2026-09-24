@@ -444,17 +444,43 @@ app.post("/auth/login/complete", async (req, res) => {
   // Cek FingerprintJS device match
   const currentFpId = req.body.fingerprintId || null;
   let deviceWarning = null;
+  const user = await User.findByPk(userId);
+
   if (currentFpId && passkey.fingerprint_id) {
-    if (currentFpId !== passkey.fingerprint_id) {
+    const isMatch =
+      currentFpId === passkey.fingerprint_id ||
+      (user && currentFpId === user.fingerprint_id);
+
+    if (!isMatch) {
       deviceWarning = "BEDA_DEVICE";
+      console.warn(
+        `⚠️ [AUTH] Perangkat Berbeda untuk user ${user?.employee_id}: client=${currentFpId} vs storedPasskey=${passkey.fingerprint_id}`,
+      );
+    } else {
+      console.log(
+        `✅ [AUTH] Device terverifikasi cocok untuk user ${user?.employee_id}: ${currentFpId}`,
+      );
+      // Sinkronkan record jika ada perbedaan minor agar selalu konsisten
+      if (passkey.fingerprint_id !== currentFpId) {
+        await passkey.update({ fingerprint_id: currentFpId });
+      }
+      if (user && user.fingerprint_id !== currentFpId) {
+        await user.update({ fingerprint_id: currentFpId });
+      }
+    }
+  } else if (currentFpId && !passkey.fingerprint_id) {
+    await passkey.update({ fingerprint_id: currentFpId });
+    if (user && !user.fingerprint_id) {
+      await user.update({ fingerprint_id: currentFpId });
     }
   }
 
   delete req.session.authChallenge;
   delete req.session.authUserId;
-  req.session.loggedInUserId = userId;
+  if (!deviceWarning) {
+    req.session.loggedInUserId = userId;
+  }
 
-  const user = await User.findByPk(userId);
   res.json({
     ok: true,
     deviceWarning,

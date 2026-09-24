@@ -227,24 +227,51 @@
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
 <script>
 // STATE
-let fpVisitorId = null;
+let fpVisitorId = localStorage.getItem('webauth_device_id') || null;
 let currentUser = null;
 let clockInterval = null;
 
-// FINGERPRINTJS
-(async () => {
-  try {
-    const FP = await FingerprintJS.load();
-    const result = await FP.get();
-    fpVisitorId = result.visitorId;
-    ['setup-fp-id', 'att-fp-id'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = fpVisitorId;
-    });
-    document.getElementById('setup-device-chip').classList.remove('d-none');
-    document.getElementById('att-device-chip').classList.remove('d-none');
-  } catch (e) { console.warn('FingerprintJS gagal:', e); }
-})();
+function updateDeviceChips(id) {
+  if (!id) return;
+  ['setup-fp-id', 'att-fp-id'].forEach(elId => {
+    const el = document.getElementById(elId);
+    if (el) el.textContent = id;
+  });
+  const setupChip = document.getElementById('setup-device-chip');
+  const attChip = document.getElementById('att-device-chip');
+  if (setupChip) setupChip.classList.remove('d-none');
+  if (attChip) attChip.classList.remove('d-none');
+}
+
+if (fpVisitorId) {
+  updateDeviceChips(fpVisitorId);
+}
+
+// FINGERPRINTJS — Kunci ID ke localStorage agar tidak berubah-ubah saat reload/zoom
+let fpPromise = null;
+async function getOrInitFpId() {
+  if (fpVisitorId) return fpVisitorId;
+  if (!fpPromise) {
+    fpPromise = (async () => {
+      try {
+        const FP = await FingerprintJS.load();
+        const result = await FP.get();
+        fpVisitorId = localStorage.getItem('webauth_device_id') || result.visitorId;
+        localStorage.setItem('webauth_device_id', fpVisitorId);
+      } catch (e) {
+        console.warn('FingerprintJS gagal:', e);
+        if (!fpVisitorId) {
+          fpVisitorId = 'dev_' + Math.random().toString(36).substring(2, 10);
+          localStorage.setItem('webauth_device_id', fpVisitorId);
+        }
+      }
+      updateDeviceChips(fpVisitorId);
+      return fpVisitorId;
+    })();
+  }
+  return await fpPromise;
+}
+getOrInitFpId();
 
 // CLOCK
 function startClock() {
@@ -358,9 +385,10 @@ async function doSetupPasskey() {
       else showAlert(`Error: ${e.message}`);
       setLoading('btn-setup', false, 'fa-fingerprint', 'Setup Passkey Sekarang'); return;
     }
+    const activeFpId = await getOrInitFpId();
     const completeRes = await fetch('/auth/register/complete', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ ...regResp, fingerprintId: fpVisitorId }),
+      body: JSON.stringify({ ...regResp, fingerprintId: activeFpId }),
     });
     const result = await completeRes.json();
     if (!completeRes.ok) {
@@ -396,9 +424,10 @@ async function doLoginThenShowAttendance() {
       else showAlert(`Error: ${e.message}`);
       return;
     }
+    const activeFpId = await getOrInitFpId();
     const completeRes = await fetch('/auth/login/complete', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ ...authResp, fingerprintId: fpVisitorId }),
+      body: JSON.stringify({ ...authResp, fingerprintId: activeFpId }),
     });
     const result = await completeRes.json();
     if (!completeRes.ok) { showAlert(result.error || 'Autentikasi gagal'); return; }
@@ -462,9 +491,10 @@ async function doCheckin() {
   try {
     const ok = await verifyBiometric();
     if (!ok) { setLoading('btn-checkin', false, 'fa-fingerprint', 'Check-In dengan Fingerprint'); return; }
+    const activeFpId = await getOrInitFpId();
     const ciRes = await fetch('/attendance/checkin', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ fingerprintId: fpVisitorId }),
+      body: JSON.stringify({ fingerprintId: activeFpId }),
     });
     const ciData = await ciRes.json();
     if (!ciRes.ok) { showAlert(ciData.error || 'Gagal check-in'); setLoading('btn-checkin', false, 'fa-fingerprint', 'Check-In dengan Fingerprint'); return; }
@@ -484,9 +514,10 @@ async function doCheckout() {
   try {
     const ok = await verifyBiometric();
     if (!ok) { setLoading('btn-checkout', false, 'fa-fingerprint', 'Check-Out dengan Fingerprint'); return; }
+    const activeFpId = await getOrInitFpId();
     const coRes = await fetch('/attendance/checkout', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ fingerprintId: fpVisitorId }),
+      body: JSON.stringify({ fingerprintId: activeFpId }),
     });
     const coData = await coRes.json();
     if (!coRes.ok) { showAlert(coData.error || 'Gagal check-out'); setLoading('btn-checkout', false, 'fa-fingerprint', 'Check-Out dengan Fingerprint'); return; }
@@ -515,9 +546,10 @@ async function verifyBiometric() {
       else showAlert(`Error: ${e.message}`);
       return false;
     }
+    const activeFpId = await getOrInitFpId();
     const vRes = await fetch('/auth/login/complete', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ ...authResp, fingerprintId: fpVisitorId }),
+      body: JSON.stringify({ ...authResp, fingerprintId: activeFpId }),
     });
     const vData = await vRes.json();
     if (!vRes.ok) { showAlert(vData.error || 'Verifikasi gagal'); return false; }
