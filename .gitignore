@@ -1,3 +1,5 @@
 node_modules/
 webauthn.db
 .env
+
+public/diagram-viewer.html
